@@ -591,6 +591,12 @@ function setupTabs() {
             pollaTable.classList.add('hidden');
             microTable.classList.remove('hidden');
         }
+
+        // Actualizar el enlace de "Ver Resultados"
+        const resultadosLink = document.getElementById('verResultadosLink');
+        if (resultadosLink) {
+            resultadosLink.href = `resultados.html?game=${gameType}`;
+        }
     };
 
     // Set initial active tab
