@@ -202,6 +202,11 @@ async function loadDataFromSupabase() {
                     return player;
                 });
 
+            // Filtrar jugadas duplicadas por ID para evitar que un error en la consulta las repita
+            if (resultsData.length > 0 && resultsData[0].id) {
+                resultsData = [...new Map(resultsData.map(item => [item.id, item])).values()];
+            }
+
             // Encontrar el número máximo de aciertos
             const maxHits = currentGameType === 'polla' ? 6 : 3;
 
@@ -459,13 +464,11 @@ async function displayResultsTable(dataToDisplay) {
 
         // 4. Aciertos
         const hitsCell = document.createElement('td');
-        hitsCell.className = 'px-6 py-4 text-center';
         hitsCell.className = 'px-2 sm:px-6 py-4 text-center';
         hitsCell.innerHTML = `<span class="bg-pink-600 text-white text-sm font-bold px-3 py-1 rounded-full">${player.hits}</span>`;
 
         // 5. Premio
         const prizeCell = document.createElement('td');
-        prizeCell.className = 'px-6 py-4 text-center font-bold';
         prizeCell.className = 'px-2 sm:px-6 py-4 text-center font-bold';
         if (player.prize > 0) {
             // Obtener el pote diario desde la configuración de la base de datos
