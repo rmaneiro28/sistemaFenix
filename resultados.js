@@ -27,11 +27,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupTabs();
     await loadAndDisplayData();
 
+    // Debounced search: esperar a que el usuario deje de escribir antes de filtrar
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            // No need to reload data, just re-display with filter
-            displayResults(); 
+        let searchDebounceTimer = null;
+        const DEBOUNCE_MS = 350; // ajustar si se desea más/menos latencia
+
+        const debouncedHandler = () => {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                // No need to reload data, just re-display con el filtro actual
+                displayResults();
+            }, DEBOUNCE_MS);
+        };
+
+        // Usar input para capturar cambios y aplicar debounce
+        searchInput.addEventListener('input', debouncedHandler);
+
+        // También manejar paste events (pegado rápido)
+        searchInput.addEventListener('paste', () => {
+            // Ejecutar el handler después de que el paste actualice el input
+            setTimeout(debouncedHandler, 0);
         });
     }
 
@@ -368,15 +384,24 @@ async function displaySummaryStats() {
 // Mostrar tabla de resultados
 async function displayResultsTable(dataToDisplay) {
     const tableBody = document.getElementById('resultsTableBody');
-    console.log("dataToDisplay", dataToDisplay);
+    const searchInput = document.getElementById('searchInput');
+    const searchTerm = searchInput ? searchInput.value.trim() : '';
+    const resultsCounter = document.getElementById('resultsCounter');
+    
     tableBody.innerHTML = '';
+
+    if (resultsCounter) {
+        if (searchTerm) {
+            resultsCounter.textContent = `Mostrando ${dataToDisplay.length} de ${resultsData.length} jugadas.`;
+        } else {
+            resultsCounter.textContent = `Mostrando ${resultsData.length} jugadas.`;
+        }
+    }
 
     if (dataToDisplay.length === 0) {
         const row = document.createElement('tr');
-        const searchInput = document.getElementById('searchInput');
-        const searchTerm = searchInput ? searchInput.value.trim() : '';
         if (searchTerm) {
-            row.innerHTML = '<td colspan="6" class="text-center py-10 text-gray-500">No se encontraron jugadores con ese nombre.</td>';
+            row.innerHTML = '<td colspan="6" class="text-center py-10 text-gray-500">No se encontraron resultados para \'' + searchTerm + '\'.</td>';
         } else {
             row.innerHTML = '<td colspan="6" class="text-center py-10 text-gray-500">No hay datos de jugadores disponibles</td>';
         }
@@ -395,15 +420,17 @@ async function displayResultsTable(dataToDisplay) {
         console.error("Error cargando datos del pote:", error);
     }
 
+    const highlight = (text, term) => {
+        if (!term) return text;
+        const regex = new RegExp(`(${term})`, 'gi');
+        return text.replace(regex, '<span class="bg-yellow-300">$1</span>');
+    };
+
     dataToDisplay.forEach((player) => {
-        console.log("player", player);
         const row = document.createElement('tr');
         row.className = 'bg-white border-b hover:bg-gray-50';
-        // Mostrar el nombre completo del jugador al pasar el cursor
-        // tanto en la fila como en la celda del nombre (útil en pantallas pequeñas)
         row.title = player.name;
 
-        // Aplicar color de fondo según aciertos
         let bgColorClass = '';
         const maxPossibleHits = currentGameType === 'polla' ? 6 : 3;
 
@@ -418,20 +445,17 @@ async function displayResultsTable(dataToDisplay) {
                 case 1: bgColorClass = 'bg-[#91e0f0]'; break;
             }
         } else if (currentGameType === 'micro') {
-            // Para micro: asignar colores a 2 y 1 aciertos
             switch (player.hits) {
-                case 2: bgColorClass = 'bg-[#03b3d8]'; break; // navy
-                case 1: bgColorClass = 'bg-[#91e0f0]'; break; // light blue (azul muy claro)
-                default: break; // 0 aciertos: sin color
+                case 2: bgColorClass = 'bg-[#03b3d8]'; break;
+                case 1: bgColorClass = 'bg-[#91e0f0]'; break;
+                default: break;
             }
         }
-        // Para micro, no se aplican colores intermedios, solo el de ganador principal.
 
         if (bgColorClass) {
             row.classList.add(bgColorClass);
         }
 
-        // 1. ID Jugador
         const positionCell = document.createElement('td');
         positionCell.className = 'px-2 py-2 font-bold text-center text-gray-900';
         positionCell.textContent = player.seq_id;
@@ -439,47 +463,34 @@ async function displayResultsTable(dataToDisplay) {
             positionCell.innerHTML = `🏆 ${player.seq_id}`;
         }
 
-        // 2. Nombre
         const nameCell = document.createElement('td');
         nameCell.className = 'px-2 py-2 font-medium text-gray-900 truncate max-w-[220px] overflow-hidden bg-red text-clip max-sm:max-w-[20px] max-sm:text-[10px]';
-        nameCell.textContent = player.name;
-        // Asegurar que el title también esté en la celda del nombre para compatibilidad
+        nameCell.innerHTML = highlight(player.name, searchTerm);
         nameCell.title = player.name;
 
-        // 3. Números Jugados
         const numbersCell = document.createElement('td');
         numbersCell.className = 'px-2 py-2 text-center';
-        // Representar números como cajas pequeñas y compactas
         numbersCell.innerHTML = `<div class="flex items-center justify-center gap-1 flex-nowrap">${
             player.numbers.map(number => {
                 const isHit = winningNumbers.includes(number);
+                const highlightedNumber = highlight(number, searchTerm);
                 if (isHit) {
-                    // Verde militar uniforme para todos los números acertados
-                    return `<span class="inline-flex items-center justify-center font-bold text-xs text-center rounded-md w-6 h-6 sm:w-7 sm:h-7" style="background-color: #06402b; color: #ffffff;">${number}</span>`;
+                    return `<span class="inline-flex items-center justify-center font-bold text-xs text-center rounded-md w-6 h-6 sm:w-7 sm:h-7" style="background-color: #06402b; color: #ffffff;">${highlightedNumber}</span>`;
                 }
                 const numberClass = 'bg-gray-200 text-gray-800';
-                return `<span class="inline-flex items-center justify-center font-bold text-xs ${numberClass} text-center rounded-md w-6 h-6 sm:w-7 sm:h-7">${number}</span>`;
+                return `<span class="inline-flex items-center justify-center font-bold text-xs ${numberClass} text-center rounded-md w-6 h-6 sm:w-7 sm:h-7">${highlightedNumber}</span>`;
             }).join('')
         }</div>`;
 
-        // 4. Aciertos
         const hitsCell = document.createElement('td');
         hitsCell.className = 'px-2 sm:px-6 py-4 text-center';
         hitsCell.innerHTML = `<span class="bg-pink-600 text-white text-sm font-bold px-3 py-1 rounded-full">${player.hits}</span>`;
 
-        // 5. Premio
         const prizeCell = document.createElement('td');
         prizeCell.className = 'px-2 sm:px-6 py-4 text-center font-bold';
         if (player.prize > 0) {
-            // Obtener el pote diario desde la configuración de la base de datos
-            const weekdayMap = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
             const poteDiario = potData ? potData.poteDiario : 0;
-
-            // Sumar el premio base más el pote diario, acumulado y garantizado proporcionalmente
             const totalPrize = player.prize + poteDiario;
-            console.log("totalPrize", totalPrize);
-            console.log("player.prize", player.prize);
-            
             prizeCell.textContent = `${Math.max(0, totalPrize)} BS`;
             prizeCell.className += ' text-black';
         } else {
@@ -487,7 +498,6 @@ async function displayResultsTable(dataToDisplay) {
             prizeCell.className += ' text-gray-500';
         }
 
-        // Agregar celdas a la fila
         row.appendChild(positionCell);
         row.appendChild(nameCell);
         row.appendChild(numbersCell);
@@ -508,9 +518,33 @@ async function displayResults() {
 
     let filteredData = resultsData;
     if (searchTerm) {
-        filteredData = resultsData.filter(player => 
-            player.name.toLowerCase().includes(searchTerm)
-        );
+        filteredData = resultsData.filter(player => {
+            const nameMatch = player.name.toLowerCase().includes(searchTerm);
+            const numberMatch = player.numbers.some(num => num.includes(searchTerm));
+            return nameMatch || numberMatch;
+        });
+
+        // Sort filtered data to prioritize names starting with the search term
+        filteredData.sort((a, b) => {
+            const aName = a.name.toLowerCase();
+            const bName = b.name.toLowerCase();
+            const aStartsWith = aName.startsWith(searchTerm);
+            const bStartsWith = bName.startsWith(searchTerm);
+
+            if (a.hits !== b.hits) {
+                return b.hits - a.hits; // Higher hits first
+            }
+
+            if (aStartsWith && !bStartsWith) {
+                return -1; // a comes first
+            }
+            if (!aStartsWith && bStartsWith) {
+                return 1; // b comes first
+            }
+
+            // For those that start with the term or don't, sort alphabetically
+            return aName.localeCompare(bName);
+        });
     }
 
     displayResultsTable(filteredData);

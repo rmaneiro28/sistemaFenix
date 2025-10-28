@@ -507,6 +507,17 @@ function setupEventListeners() {
     if (acumuladoConfigInput) {
         acumuladoConfigInput.addEventListener('input', () => updateGameConfiguration());
     }
+
+    // Listeners para el nuevo modal de deselección
+    const cancelDeselectBtn = document.getElementById('cancelDeselectBtn');
+    if(cancelDeselectBtn) {
+        cancelDeselectBtn.addEventListener('click', closeConfirmDeselectModal);
+    }
+
+    const confirmDeselectBtn = document.getElementById('confirmDeselectBtn');
+    if(confirmDeselectBtn) {
+        confirmDeselectBtn.addEventListener('click', confirmDeselect);
+    }
 }
 
 function switchGameModeValues(gameType) {
@@ -963,20 +974,46 @@ async function resetAll() {
 }
 
 // Función para seleccionar/deseleccionar un número ganador
+let numberToDeselect = null;
+
+// Función para seleccionar/deseleccionar un número ganador
 async function selectNumber(cell) {
     const number = cell.textContent.trim();
     
     if (cell.classList.contains('selected')) {
-        // Si ya está seleccionado, lo deseleccionamos
-        cell.classList.remove('selected', 'ring-yellow-400', 'transform', 'scale-110', 'bg-yellow-300', 'text-black');
-        winningNumbers.delete(number);
+        // Si ya está seleccionado, abrir modal de confirmación para deseleccionar
+        openConfirmDeselectModal(cell, number);
     } else {
         // Si no está seleccionado, lo seleccionamos
         cell.classList.add('selected', 'ring-yellow-400', 'transform', 'scale-110', 'bg-yellow-300', 'text-black');
         winningNumbers.add(number);
+        await updateWinningNumbersInDB();
     }
-    
-    await updateWinningNumbersInDB();
+}
+
+// Abrir modal de confirmación para deseleccionar número
+function openConfirmDeselectModal(cell, number) {
+    numberToDeselect = { cell, number };
+    const modal = document.getElementById('confirmDeselectModal');
+    modal.classList.remove('hidden');
+}
+
+// Cerrar modal de confirmación para deseleccionar número
+function closeConfirmDeselectModal() {
+    numberToDeselect = null;
+    const modal = document.getElementById('confirmDeselectModal');
+    modal.classList.add('hidden');
+}
+
+// Confirmar la deselección de un número
+async function confirmDeselect() {
+    if (numberToDeselect) {
+        const { cell, number } = numberToDeselect;
+        cell.classList.remove('selected', 'ring-yellow-400', 'transform', 'scale-110', 'bg-yellow-300', 'text-black');
+        winningNumbers.delete(number);
+        await updateWinningNumbersInDB();
+    }
+    closeConfirmDeselectModal();
 }
 
 // Función para actualizar los números ganadores en la base de datos
@@ -1959,8 +1996,12 @@ const debouncedSaveAdditionalPrizes = debounce(() => {
 // Abrir modal de reiniciar jugadas
 function openResetPlaysModal() {
     const modeName = currentGameType === 'polla' ? 'POLLA' : 'MICRO';
+    // Usar el conteo desde los arrays locales (rápido y consistente con la UI actual)
+    const playsCountForMode = currentGameType === 'polla' ? (pollaPlayers ? pollaPlayers.length : 0) : (microPlayers ? microPlayers.length : 0);
     const msgEl = document.getElementById('confirmResetModalIndexMsg');
-    if (msgEl) msgEl.textContent = `Esto pondrá el pote diario y semanal a cero (lunes..domingo, garantizado y acumulado) y eliminará las jugadas y los números ganadores SOLO del modo actual: ${modeName}. No afectará al otro modo.`;
+    if (msgEl) {
+        msgEl.textContent = `Esto borrará ${playsCountForMode} jugada${playsCountForMode === 1 ? '' : 's'} de ${modeName} y pondrá el pote diario y semanal a cero (lunes..domingo, garantizado y acumulado). Además eliminará los números ganadores SOLO del modo actual. No afectará al otro modo.`;
+    }
     document.getElementById('resetPlaysModal').classList.remove('hidden');
 }
 

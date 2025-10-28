@@ -612,6 +612,26 @@
         </div>
     </div>
 
+    <!-- Modal para confirmar deselección de número -->
+    <div id="confirmDeselectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">¿Quitar número?</h3>
+                    <p class="text-gray-700 mb-6">Este número ya ha sido marcado como resultado del día. ¿Estás seguro de que quieres quitarlo?</p>
+                    <div class="flex justify-end space-x-3">
+                        <button id="cancelDeselectBtn" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                            Cancelar
+                        </button>
+                        <button id="confirmDeselectBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                            Sí, quitar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Overlay de Carga Global -->
     <div id="loadingOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-[9999] hidden">
         <svg class="animate-spin h-12 w-12 text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
