@@ -379,6 +379,21 @@ async function displaySummaryStats() {
     document.getElementById('totalWinnersResult').textContent = fullHitWinners.length;
     document.getElementById('totalPrizeResult').textContent = `${prizePool.toFixed(0)} BS`;
     document.getElementById('prizePerWinnerResult').textContent = prizePerWinner > 0 ? `${prizePerWinner} BS` : '0 BS';
+
+    // Actualizar label de Premio/Acumulado según exista acumulado
+    try {
+        const premioAcumEl = document.getElementById('premioAcum');
+        if (premioAcumEl) {
+            if (acumulado && Number(acumulado) > 0) {
+                premioAcumEl.textContent = 'Premio + Acumulado';
+            } else {
+                premioAcumEl.textContent = 'Premio Total';
+            }
+        }
+    } catch (err) {
+        // No interrumpir si algo falla al actualizar el label
+        console.warn('No se pudo actualizar el label de premio/acumulado:', err);
+    }
 }
 
 // Mostrar tabla de resultados
@@ -698,7 +713,11 @@ function generatePreviewImage() {
     ctx.textAlign = 'left';
     ctx.fillText(`Total Jugadas: ${resultsData.length}`, 50, 250);
     ctx.fillText(`Ganadores: ${resultsData.filter(p => p.hits === (currentGameType === 'polla' ? 6 : 3)).length}`, 50, 300);
-    ctx.fillText(`Premio Total: ${document.getElementById('totalPrizeResult').textContent}`, 50, 350);
+    // Usar el label dinámico de la UI para mantener consistencia (Premio + Acumulado o Premio Total)
+    const premioLabelEl = document.getElementById('premioAcum');
+    const premioLabel = premioLabelEl ? premioLabelEl.textContent : 'Premio Total';
+    const totalPrizeText = document.getElementById('totalPrizeResult') ? document.getElementById('totalPrizeResult').textContent : '0 BS';
+    ctx.fillText(`${premioLabel}: ${totalPrizeText}`, 50, 350);
     ctx.fillText(`Premio por Ganador: ${document.getElementById('prizePerWinnerResult').textContent}`, 50, 400);
 
     // Logo o imagen adicional (opcional)
@@ -730,10 +749,12 @@ function updateMetaTags(imageDataUrl) {
         const ogDescription = document.querySelector('meta[property="og:description"]');
         if (ogDescription) {
             const winningNumbersText = winningNumbers.length > 0 ? winningNumbers.join(', ') : 'No disponibles';
+            const premioLabelEl = document.getElementById('premioAcum');
+            const premioLabelText = premioLabelEl ? premioLabelEl.textContent : 'Premio Total';
             const totalPrizeElement = document.getElementById('totalPrizeResult');
             const prizeText = totalPrizeElement ? totalPrizeElement.textContent : '0 BS';
 
-            ogDescription.setAttribute('content', `Resultados de hoy: ${winningNumbersText} | Jugadas: ${resultsData.length} | Premio: ${prizeText}`);
+            ogDescription.setAttribute('content', `Resultados de hoy: ${winningNumbersText} | Jugadas: ${resultsData.length} | ${premioLabelText}: ${prizeText}`);
         }
 
         // Update og:image
