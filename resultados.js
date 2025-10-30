@@ -235,7 +235,7 @@ async function loadDataFromSupabase() {
             
             // Calcular el pozo total para el premio mayor
             // Restar el pote semanal del pozo total (según especificación)
-            let pozoTotal = recaudadoParaPremio - poteSemanal + garantizado + acumulado;
+            let pozoTotal = recaudadoParaPremio + poteSemanal + garantizado + acumulado;
             // Asegurar que no sea negativo
             if (pozoTotal < 0) pozoTotal = 0;
 
