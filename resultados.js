@@ -155,8 +155,6 @@ async function loadDataFromSupabase() {
             // Si no hay datos en BD, aun así el día actual debe aportar 143
             const weekdayMap = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
             const todayName = weekdayMap[new Date().getDay()];
-            // Sumamos 143 para el día actual y 0 para los demás
-            poteSemanal = 143; // porque el día actual siempre vale 143
         }
 
         // Cargar números ganadores según el tipo de juego
@@ -435,6 +433,24 @@ async function displayResultsTable(dataToDisplay) {
         console.error("Error cargando datos del pote:", error);
     }
 
+    // Calcular aquí el premio por ganador de la misma forma que en los KPIs
+    const maxPossibleHits = currentGameType === 'polla' ? 6 : 3;
+    const precioJugadaLocal = potData && potData.precioJugada ? potData.precioJugada : 50;
+    const payingPlayersCountLocal = resultsData.filter(p => !p.gratis).length;
+    const premioTotalLocal = payingPlayersCountLocal * precioJugadaLocal;
+    const recaudadoParaPremioLocal = premioTotalLocal * 0.8;
+    const poteSemanalLocal = potData && potData.poteSemanal ? potData.poteSemanal : 0;
+    const garantizadoLocal = potData && potData.garantizado ? potData.garantizado : 0;
+    const acumuladoLocal = potData && potData.acumulado ? potData.acumulado : 0;
+    let pozoTotalLocal = recaudadoParaPremioLocal + poteSemanalLocal + garantizadoLocal + acumuladoLocal;
+    if (pozoTotalLocal < 0) pozoTotalLocal = 0;
+    const winnersCountLocal = resultsData.filter(player => player.hits === maxPossibleHits && !player.gratis).length;
+    let prizePerWinnerLocal = 0;
+    if (winnersCountLocal > 0) {
+        prizePerWinnerLocal = Math.floor(pozoTotalLocal / winnersCountLocal);
+        if (prizePerWinnerLocal < garantizadoLocal) prizePerWinnerLocal = garantizadoLocal;
+    }
+
     const highlight = (text, term) => {
         if (!term) return text;
         const regex = new RegExp(`(${term})`, 'gi');
@@ -503,7 +519,12 @@ async function displayResultsTable(dataToDisplay) {
 
         const prizeCell = document.createElement('td');
         prizeCell.className = 'px-2 sm:px-6 py-4 text-center font-bold';
-        if (player.prize > 0) {
+        // Mostrar en la tabla el premio por ganador calculado igual que en los KPIs
+        if (player.hits === maxPossibleHits && !player.gratis && prizePerWinnerLocal > 0) {
+            prizeCell.textContent = `${prizePerWinnerLocal} BS`;
+            prizeCell.className += ' text-black';
+        } else if (player.prize > 0) {
+            // Fallback: si player.prize existe (otros niveles), mostrarlo sumando pote diario como antes
             const poteDiario = potData ? potData.poteDiario : 0;
             const totalPrize = player.prize + poteDiario;
             prizeCell.textContent = `${Math.max(0, totalPrize)} BS`;
