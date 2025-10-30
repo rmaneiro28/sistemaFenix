@@ -3,6 +3,9 @@ let resultsData = [];
 let winningNumbers = [];
 let currentGameType = 'polla'; // 'polla' o 'micro'
 
+// Último premio por ganador calculado (fuente única para KPI y tabla)
+let lastComputedPrizePerWinner = 0;
+
 // Inicialización cuando se carga la página
 document.addEventListener('DOMContentLoaded', async function() {
     // Inicializar Supabase
@@ -237,26 +240,29 @@ async function loadDataFromSupabase() {
             // Asegurar que no sea negativo
             if (pozoTotal < 0) pozoTotal = 0;
 
-            const winnersWithMaxHits = resultsData.filter(player => player.hits === maxHits && !player.gratis);
+            // Incluir todos los ganadores (independientemente de 'gratis') al dividir el premio total
+            const winnersWithMaxHits = resultsData.filter(player => player.hits === maxHits);
 
             let prizeForMaxHits = 0;
             if (winnersWithMaxHits.length > 0) {
                 prizeForMaxHits = Math.floor(pozoTotal / winnersWithMaxHits.length);
-            }
-
-            // Aplicar premio garantizado si es necesario
-            if (winnersWithMaxHits.length > 0 && prizeForMaxHits < garantizado) {
-                prizeForMaxHits = garantizado;
+                // Aplicar premio garantizado si es necesario
+                if (prizeForMaxHits < garantizado) {
+                    prizeForMaxHits = garantizado;
+                }
             }
 
             // Asignar premios a cada jugador (solo premio mayor)
             resultsData.forEach(player => {
-                if (player.hits === maxHits && !player.gratis) {
+                if (player.hits === maxHits) {
                     player.prize = prizeForMaxHits;
                 } else {
                     player.prize = 0; // Otros premios se pueden calcular aquí si es necesario
                 }
             });
+
+            // Actualizar el valor global del premio por ganador para sincronizar KPI/tabla
+            lastComputedPrizePerWinner = Math.max(0, Math.floor(prizeForMaxHits || 0));
 
             // Ordenar por aciertos (descendente) y luego por seq_id si no hay aciertos, o por nombre
             resultsData.sort((a, b) => {
@@ -340,23 +346,26 @@ async function displaySummaryStats() {
     } 
     
     const fullHitWinners = resultsData.filter(player => player.hits === maxPossibleHits);
-    const payingPlayersCount = resultsData.filter(player => !player.gratis).length;
-    const payingWinners = fullHitWinners.filter(player => !player.gratis);
 
+    const payingPlayersCount = resultsData.filter(player => !player.gratis).length;
     const totalCollected = payingPlayersCount * precioJugada;
     const recaudadoParaPremio = totalCollected * 0.8;
     // Restar el pote semanal del premio total según la nueva regla
     let prizePool = recaudadoParaPremio + poteSemanal + garantizado + acumulado;
     if (prizePool < 0) prizePool = 0;
 
+    // Calcular premio por ganador: dividir el premio total entre la cantidad de GANADORES
+    // (usar todos los ganadores, independientemente de si son "gratis" o no)
     let prizePerWinner = 0;
-    if (payingWinners.length > 0) {
-        prizePerWinner = Math.floor(prizePool / payingWinners.length);
+    const winnersCount = fullHitWinners.length;
+    if (winnersCount > 0) {
+        prizePerWinner = Math.floor(prizePool / winnersCount);
+        // Aplicar garantizado si aplica
+        if (prizePerWinner < garantizado) prizePerWinner = garantizado;
     }
-    // Aplicar garantizado
-    if (payingWinners.length > 0 && prizePerWinner < garantizado) {
-        prizePerWinner = garantizado;
-    }
+
+    // Guardar el valor en la variable global para que KPI, tabla y exporten el mismo número
+    lastComputedPrizePerWinner = Math.max(0, Math.floor(prizePerWinner));
 
     // Actualizar el valor de la jugada en la UI de resultados
     const precioJugadaResultValueEl = document.getElementById('precioJugadaResultValue');
@@ -376,7 +385,8 @@ async function displaySummaryStats() {
     }
     document.getElementById('totalWinnersResult').textContent = fullHitWinners.length;
     document.getElementById('totalPrizeResult').textContent = `${prizePool.toFixed(0)} BS`;
-    document.getElementById('prizePerWinnerResult').textContent = prizePerWinner > 0 ? `${prizePerWinner} BS` : '0 BS';
+    // Mostrar en KPI el mismo valor que se dividirá entre ganadores
+    document.getElementById('prizePerWinnerResult').textContent = lastComputedPrizePerWinner > 0 ? `${lastComputedPrizePerWinner} BS` : '0 BS';
 
     // Actualizar label de Premio/Acumulado según exista acumulado
     try {
@@ -433,23 +443,10 @@ async function displayResultsTable(dataToDisplay) {
         console.error("Error cargando datos del pote:", error);
     }
 
-    // Calcular aquí el premio por ganador de la misma forma que en los KPIs
+    // Usar el premio por ganador ya calculado en displaySummaryStats() para garantizar
+    // que KPI y tabla muestren exactamente el mismo valor
     const maxPossibleHits = currentGameType === 'polla' ? 6 : 3;
-    const precioJugadaLocal = potData && potData.precioJugada ? potData.precioJugada : 50;
-    const payingPlayersCountLocal = resultsData.filter(p => !p.gratis).length;
-    const premioTotalLocal = payingPlayersCountLocal * precioJugadaLocal;
-    const recaudadoParaPremioLocal = premioTotalLocal * 0.8;
-    const poteSemanalLocal = potData && potData.poteSemanal ? potData.poteSemanal : 0;
-    const garantizadoLocal = potData && potData.garantizado ? potData.garantizado : 0;
-    const acumuladoLocal = potData && potData.acumulado ? potData.acumulado : 0;
-    let pozoTotalLocal = recaudadoParaPremioLocal + poteSemanalLocal + garantizadoLocal + acumuladoLocal;
-    if (pozoTotalLocal < 0) pozoTotalLocal = 0;
-    const winnersCountLocal = resultsData.filter(player => player.hits === maxPossibleHits && !player.gratis).length;
-    let prizePerWinnerLocal = 0;
-    if (winnersCountLocal > 0) {
-        prizePerWinnerLocal = Math.floor(pozoTotalLocal / winnersCountLocal);
-        if (prizePerWinnerLocal < garantizadoLocal) prizePerWinnerLocal = garantizadoLocal;
-    }
+    const prizePerWinnerLocal = Math.max(0, Math.floor(lastComputedPrizePerWinner || 0));
 
     const highlight = (text, term) => {
         if (!term) return text;
@@ -520,7 +517,8 @@ async function displayResultsTable(dataToDisplay) {
         const prizeCell = document.createElement('td');
         prizeCell.className = 'px-2 sm:px-6 py-4 text-center font-bold';
         // Mostrar en la tabla el premio por ganador calculado igual que en los KPIs
-        if (player.hits === maxPossibleHits && !player.gratis && prizePerWinnerLocal > 0) {
+        if (player.hits === maxPossibleHits && prizePerWinnerLocal > 0) {
+            // Mostrar el mismo valor por ganador que el KPI (división del premio total entre ganadores)
             prizeCell.textContent = `${prizePerWinnerLocal} BS`;
             prizeCell.className += ' text-black';
         } else if (player.prize > 0) {
@@ -609,8 +607,13 @@ function exportResults() {
         const id = player.seq_id;
         const numbers = player.numbers.join('-');
         const gratis = player.gratis ? 'SÍ' : 'NO';
-        const prize = player.prize > 0 ? `${player.prize} BS` : '-';
-        
+        let prize = '-';
+        if (player.hits === (currentGameType === 'polla' ? 6 : 3)) {
+            prize = lastComputedPrizePerWinner > 0 ? `${lastComputedPrizePerWinner} BS` : '-';
+        } else if (player.prize > 0) {
+            prize = `${Math.max(0, Number(player.prize) || 0)} BS`;
+        }
+
         csvContent += `${id},"${player.name}","${numbers}",${player.hits},${gratis},"${prize}"\n`;
     });
 
