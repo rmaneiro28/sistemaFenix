@@ -67,11 +67,11 @@ function showToast(message, type = 'info') {
 }
 
 // Inicialización cuando se carga la página
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeGame();
     setupEventListeners();
     updateDisplay();
-    
+
     // Nota: el botón de limpiar números ganadores abre un modal (openClearSelectionModal)
     // y la confirmación se maneja en confirmClearSelection(). No se añade aquí un
     // handler directo para evitar comportamientos duplicados.
@@ -98,7 +98,7 @@ async function initializeGame() {
         console.error("La función initializeSupabase no está definida. Asegúrate de que supabase-config.js se cargue correctamente.");
         return;
     }
-    
+
     // Inicializar contadores
     playsCount = 0;
     winnersCount = 0;
@@ -106,7 +106,7 @@ async function initializeGame() {
 
     // Cargar potes guardados
     await loadPotsFromSupabase();
-    
+
     // Generar filas iniciales para ambas tablas
     generatePollaTableRows();
     generateMicroTableRows();
@@ -114,7 +114,7 @@ async function initializeGame() {
     updateUIForGameType();
     prizesToDistribute = 0;
     prizeAmount = 0;
-    
+
     // Cargar datos guardados desde Supabase (tickets/jugadas, ganadores y stats)
     await loadTicketsFromSupabase();
     await loadWinnersFromSupabase();
@@ -129,7 +129,7 @@ async function initializeGame() {
     // Registrar listener global para pegado. Evitar manejar aquí pegados que vengan
     // desde dentro de los cuerpos de tabla (ya tienen listeners específicos) o desde
     // inputs/areas editables.
-    document.addEventListener('paste', function(e) {
+    document.addEventListener('paste', function (e) {
         try {
             const target = e.target;
             if (target) {
@@ -154,7 +154,7 @@ async function initializeGame() {
     const microBody = document.getElementById('microTableBody');
     if (pollaBody) pollaBody.addEventListener('paste', handleTablePaste);
     if (microBody) microBody.addEventListener('paste', handleTablePaste);
-    
+
     // Marcar día actual
     highlightCurrentDay();
 
@@ -176,12 +176,12 @@ async function loadPotsFromSupabase() {
 
     // Update UI with the loaded values for the current game
     switchGameModeValues(currentGameType);
-    
+
     // Solo aplicar el valor por defecto del día actual si no existe en la BD
     const weekdayMap = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     const todayName = weekdayMap[new Date().getDay()];
     const currentValues = dailyValues[currentGameType];
-    
+
     // Solo aplicar el valor por defecto si el valor es null/undefined (no existe en BD)
     // No aplicar si es 0, porque 0 puede ser un valor intencional del usuario
     if (currentValues[todayName] === null || currentValues[todayName] === undefined) {
@@ -252,13 +252,13 @@ function setupRowEvents(row) {
     const editableCells = row.querySelectorAll('[data-editable]');
     editableCells.forEach(cell => {
         if (cell.dataset.editable === 'gratis') {
-            cell.addEventListener('click', function() {
+            cell.addEventListener('click', function () {
                 // Registrar la última celda clickeada
                 lastClickedCell = this;
                 toggleGratis(this, row);
             });
         } else {
-            cell.addEventListener('click', function() {
+            cell.addEventListener('click', function () {
                 // Registrar la última celda clickeada
                 lastClickedCell = this;
                 makeCellEditable(this, row);
@@ -355,7 +355,7 @@ async function handleTablePaste(e) {
 
                 if (nameEmpty && numbersEmpty) {
                     foundRow = candidate;
-                    console.warn(`[handleTablePaste] Usando fila ${searchIdx} después de buscar desde el principio para línea ${i+1}`);
+                    console.warn(`[handleTablePaste] Usando fila ${searchIdx} después de buscar desde el principio para línea ${i + 1}`);
                     break;
                 }
             }
@@ -365,7 +365,7 @@ async function handleTablePaste(e) {
         if (!foundRow) {
             foundRow = tbody.querySelector(`tr[data-row-id="${currentIndex}"]`);
             if (foundRow) {
-                console.warn(`[handleTablePaste] Sobrescribiendo fila ${currentIndex} para línea ${i+1} - no hay filas vacías disponibles`);
+                console.warn(`[handleTablePaste] Sobrescribiendo fila ${currentIndex} para línea ${i + 1} - no hay filas vacías disponibles`);
             }
         }
 
@@ -400,10 +400,10 @@ async function handleTablePaste(e) {
             gratisCell.classList.toggle('font-bold', gratisCell.textContent === 'SÍ');
         }
 
-    // Actualizar datos en memoria y marcar para guardado en lote
-    updatePlayerData(foundRow);
-    // Log para depuración: qué fila recibió qué datos del portapapeles
-    try { console.debug('[handleTablePaste] assigned rowId=%s fromLine=%d name=%s', foundRow.dataset.rowId, i, (cols[0]||'')); } catch(e){}
+        // Actualizar datos en memoria y marcar para guardado en lote
+        updatePlayerData(foundRow);
+        // Log para depuración: qué fila recibió qué datos del portapapeles
+        try { console.debug('[handleTablePaste] assigned rowId=%s fromLine=%d name=%s', foundRow.dataset.rowId, i, (cols[0] || '')); } catch (e) { }
 
         const hasAny = (nameCell && nameCell.textContent.trim().length > 0) || numberCells.some(c => c.textContent.trim().length > 0);
         if (hasAny) {
@@ -426,7 +426,7 @@ async function handleTablePaste(e) {
 
     // Guardar filas en la BD con concurrencia limitada para no saturar el cliente/servidor
     if (rowsToSave.length > 0) {
-        const tasks = rowsToSave.map(r => async () => { try { await saveRowData(r); } catch(e){ console.error('Error saving row after paste', e); } });
+        const tasks = rowsToSave.map(r => async () => { try { await saveRowData(r); } catch (e) { console.error('Error saving row after paste', e); } });
         // Ejecutar con concurrencia 5
         const runWithConcurrency = async (tasks, limit) => {
             let i = 0;
@@ -472,11 +472,11 @@ function setupEventListeners() {
     // Event listeners para los números del tablero
     const numberCells = document.querySelectorAll('.number-cell');
     numberCells.forEach(cell => {
-        cell.addEventListener('click', function() {
+        cell.addEventListener('click', function () {
             selectNumber(this);
         });
     });
-    
+
     // Event listeners para los días de la semana
     setupDayValueCells();
 
@@ -489,7 +489,7 @@ function setupEventListeners() {
     if (acumuladoInput) {
         acumuladoInput.addEventListener('input', () => updateAdditionalPrizes());
     }
-    
+
     // Event listeners para configuración de juego
     const precioJugadaInput = document.getElementById('precioJugadaInput');
     if (precioJugadaInput) {
@@ -510,12 +510,12 @@ function setupEventListeners() {
 
     // Listeners para el nuevo modal de deselección
     const cancelDeselectBtn = document.getElementById('cancelDeselectBtn');
-    if(cancelDeselectBtn) {
+    if (cancelDeselectBtn) {
         cancelDeselectBtn.addEventListener('click', closeConfirmDeselectModal);
     }
 
     const confirmDeselectBtn = document.getElementById('confirmDeselectBtn');
-    if(confirmDeselectBtn) {
+    if (confirmDeselectBtn) {
         confirmDeselectBtn.addEventListener('click', confirmDeselect);
     }
 }
@@ -533,14 +533,14 @@ function switchGameModeValues(gameType) {
     dayInputs.forEach(input => {
         const day = input.dataset.day;
         let value = valuesToLoad[day] || 0;
-        
+
         input.value = value !== 0 ? value : '';
     });
 
     // Additional prize inputs
     const garantizadoInput = document.getElementById('garantizadoInput');
     const acumuladoInput = document.getElementById('acumuladoInput');
-    
+
     if (garantizadoInput) {
         const garantizado = valuesToLoad.garantizado || 0;
         garantizadoInput.value = garantizado > 0 ? garantizado : '';
@@ -549,13 +549,13 @@ function switchGameModeValues(gameType) {
         const acumulado = valuesToLoad.acumulado || 0;
         acumuladoInput.value = acumulado > 0 ? acumulado : '';
     }
-    
+
     // Game configuration inputs
     const precioJugadaInput = document.getElementById('precioJugadaInput');
     const poteDiarioInput = document.getElementById('poteDiarioInput');
     const poteSemanalInput = document.getElementById('poteSemanalInput');
     const acumuladoConfigInput = document.getElementById('acumuladoConfigInput');
-    
+
     if (precioJugadaInput) {
         const precioJugada = valuesToLoad.precioJugada || 50;
         precioJugadaInput.value = precioJugada;
@@ -593,7 +593,7 @@ function setupTabs() {
                 t.classList.add('text-white');
             }
         });
-        
+
         // Mostrar/ocultar tablas según el tipo de juego
         if (gameType === 'polla') {
             pollaTable.classList.remove('hidden');
@@ -620,10 +620,10 @@ function setupTabs() {
 
             currentGameType = newGameType;
             setActiveTab(currentGameType);
-            
+
             // Cambiar los valores de los inputs de días y recalcular el pote
             switchGameModeValues(currentGameType);
-            
+
             // Recargar los datos para el nuevo tipo de juego
             await loadTicketsFromSupabase();
             await loadWinnersFromSupabase();
@@ -646,7 +646,7 @@ function updateUIForGameType() {
 
     modalTitle.textContent = 'AGREGAR NUEVA JUGADA';
     modalNumbersLabel.textContent = isPolla ? 'NÚMEROS DEL JUGADOR (6 números):' : 'NÚMEROS DEL JUGADOR (3 números):';
-    
+
     numberInputs.forEach(input => {
         if (input) {
             input.required = isPolla;
@@ -664,11 +664,11 @@ function updateUIForGameType() {
 function setupDayValueCells() {
     const dayInputs = document.querySelectorAll('input[data-day]');
     dayInputs.forEach(input => {
-        input.addEventListener('input', function() {
+        input.addEventListener('input', function () {
             updateTotalPot();
         });
-        
-        input.addEventListener('blur', function() {
+
+        input.addEventListener('blur', function () {
             updateTotalPot();
         });
     });
@@ -676,7 +676,7 @@ function setupDayValueCells() {
 
 function debounce(func, delay) {
     let timeoutId;
-    return function(...args) {
+    return function (...args) {
         const context = this;
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => func.apply(context, args), delay);
@@ -689,7 +689,7 @@ function updateTotalPot() {
     const dayInputs = document.querySelectorAll('input[data-day]');
     let total = 0;
     const currentDayValues = dailyValues[currentGameType];
-    
+
     dayInputs.forEach(input => {
         const day = input.dataset.day;
         const value = parseInt(input.value) || 0;
@@ -700,10 +700,10 @@ function updateTotalPot() {
             currentDayValues[day] = value;
         }
     });
-    
+
     // Mostrar el total de los días (solo para referencia visual)
     document.getElementById('totalPotValue').textContent = total;
-    
+
     // El cálculo real del premio ahora usa el pote semanal manual y el pote diario automático
     updateCalculatedStats();
 
@@ -715,7 +715,7 @@ function updateTotalPot() {
 function updateAdditionalPrizes() {
     const garantizado = parseInt(document.getElementById('garantizadoInput').value) || 0;
     const acumulado = parseInt(document.getElementById('acumuladoInput').value) || 0;
-    
+
     const currentPrizeValues = dailyValues[currentGameType];
     if (currentPrizeValues) {
         currentPrizeValues.garantizado = garantizado;
@@ -734,16 +734,16 @@ function updateGameConfiguration() {
     const precioJugada = parseInt(document.getElementById('precioJugadaInput').value) || 50;
     const poteSemanal = parseInt(document.getElementById('poteSemanalInput').value) || 0;
     const acumulado = parseInt(document.getElementById('acumuladoInput').value) || 0;
-    
+
     const currentValues = dailyValues[currentGameType];
-    
+
     // Actualizar precio de jugada, pote semanal manual y acumulado
     if (currentValues) {
         currentValues.precioJugada = precioJugada;
         currentValues.poteSemanal = poteSemanal;
         currentValues.acumulado = acumulado;
     }
-    
+
     // Actualizar el display del valor de la jugada
     const precioJugadaValueEl = document.getElementById('precioJugadaValue');
     if (precioJugadaValueEl) precioJugadaValueEl.textContent = `${precioJugada} BS`;
@@ -790,25 +790,25 @@ async function resetAll() {
 
         // Verificar que la función de truncado esté disponible
         const truncateFunction = currentGameType === 'polla' ? async function truncateJugadasPolla() {
-    try {
-        const { error } = await supabaseClient.rpc('truncate_jugadas_polla');
-        if (error) throw error;
-        return { success: true };
-    } catch (error) {
-        console.error('Error al truncar jugadas_polla:', error);
-        return { success: false, error: error.message };
-    }
-}
- : async function truncateJugadasMicro() {
-    try {
-        const { error } = await supabaseClient.rpc('truncate_jugadas_micro');
-        if (error) throw error;
-        return { success: true };
-    } catch (error) {
-        console.error('Error al truncar jugadas_micro:', error);
-        return { success: false, error: error.message };
-    }
-};
+            try {
+                const { error } = await supabaseClient.rpc('truncate_jugadas_polla');
+                if (error) throw error;
+                return { success: true };
+            } catch (error) {
+                console.error('Error al truncar jugadas_polla:', error);
+                return { success: false, error: error.message };
+            }
+        }
+            : async function truncateJugadasMicro() {
+                try {
+                    const { error } = await supabaseClient.rpc('truncate_jugadas_micro');
+                    if (error) throw error;
+                    return { success: true };
+                } catch (error) {
+                    console.error('Error al truncar jugadas_micro:', error);
+                    return { success: false, error: error.message };
+                }
+            };
         if (typeof truncateFunction !== 'function') {
             throw new Error(`Función de truncado no disponible para ${gameName}`);
         }
@@ -870,7 +870,7 @@ async function deletePlay(rowId) {
 
     const targetPlayersArray = currentGameType === 'polla' ? pollaPlayers : microPlayers;
     const playerIndex = targetPlayersArray.findIndex(p => p.id === rowId);
-    
+
     if (playerIndex === -1) {
         showToast('No se encontró la jugada para eliminar.', 'error');
         return;
@@ -905,10 +905,10 @@ async function deletePlay(rowId) {
         newRowContent += `<td class="p-2 cursor-pointer hover:bg-gray-100 rounded" data-editable="gratis">NO</td>`;
         newRowContent += `<td class="p-2 font-bold" data-hits="0">0</td>`;
         newRowContent += `<td class="p-2"><button onclick="deletePlay(${rowId})" class="text-red-500 hover:text-red-700 font-semibold text-xs" title="Eliminar jugada">ELIMINAR</button></td>`;
-        
+
         row.innerHTML = newRowContent;
         row.removeAttribute('data-db-id');
-    applyHitsColors(row, 0, currentGameType);
+        applyHitsColors(row, 0, currentGameType);
         setupRowEvents(row); // Volver a adjuntar eventos a las nuevas celdas
     }
 }
@@ -932,12 +932,12 @@ async function saveRowData(row) {
     playerData._saving = true;
 
     const dbManager = currentGameType === 'polla' ? JugadasPollaDB : JugadasMicroDB;
-    
+
     const dataToSave = {
         nombre_jugador: playerData.name,
         gratis: playerData.gratis,
     };
-    playerData.numbers.forEach((num, i) => dataToSave[`nro_${i+1}`] = num);
+    playerData.numbers.forEach((num, i) => dataToSave[`nro_${i + 1}`] = num);
 
     let res;
     try {
@@ -979,7 +979,7 @@ let numberToDeselect = null;
 // Función para seleccionar/deseleccionar un número ganador
 async function selectNumber(cell) {
     const number = cell.textContent.trim();
-    
+
     if (cell.classList.contains('selected')) {
         // Si ya está seleccionado, abrir modal de confirmación para deseleccionar
         openConfirmDeselectModal(cell, number);
@@ -1031,7 +1031,7 @@ async function updateWinningNumbersInDB() {
     try {
         // Siempre eliminamos el último registro para evitar duplicados o registros huérfanos.
         await dbManager.eliminarUltimo();
-        
+
         // Solo creamos un nuevo registro si hay números seleccionados.
         if (nums.length > 0) {
             const createRes = await dbManager.crear(nums);
@@ -1040,11 +1040,11 @@ async function updateWinningNumbersInDB() {
                 throw new Error(createRes.error || 'Error desconocido al guardar.');
             }
         }
-        
+
         // Si llegamos aquí, la operación fue exitosa.
         msg.textContent = 'Números ganadores actualizados.';
         msg.className = 'text-green-600 text-center text-sm mb-4';
-        
+
     } catch (error) {
         msg.textContent = 'Error al guardar: ' + error.message;
         msg.className = 'text-red-600 text-center text-sm mb-4';
@@ -1061,7 +1061,7 @@ function highlightCurrentDay() {
     const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     const today = new Date().getDay();
     const currentDay = days[today];
-    
+
     const dayInput = document.querySelector(`input[data-day="${currentDay}"]`);
     if (dayInput) {
         dayInput.parentElement.previousElementSibling.classList.add('bg-blue-700');
@@ -1080,7 +1080,7 @@ function makeCellEditable(cell, row) {
         input.select();
         return;
     }
-    
+
     // Limpiar referencias anteriores
     editableCache.delete(cell);
 
@@ -1090,14 +1090,14 @@ function makeCellEditable(cell, row) {
     const input = document.createElement('input');
     input.type = 'text';
     input.value = currentValue;
-    
+
     // Aplicar estilos diferentes para celdas de nombre vs números
     if (cell.dataset.editable === 'name') {
         input.className = 'w-full min-w-[100px] border border-blue-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300';
     } else {
         input.className = 'w-12 text-center border border-blue-300 rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300';
     }
-    
+
     input.style.height = '1.75rem'; // Altura fija para mantener consistencia
 
     // Limpiar la celda y agregar el input
@@ -1156,7 +1156,7 @@ function makeCellEditable(cell, row) {
         // Para celdas de número, reemplazar el contenido directamente
         cell.innerHTML = '';
         cell.appendChild(input);
-        
+
         // Enfocar y seleccionar el texto inmediatamente
         setTimeout(() => {
             input.focus();
@@ -1167,7 +1167,7 @@ function makeCellEditable(cell, row) {
     requestAnimationFrame(() => {
         input.focus();
         input.select();
-        
+
         // Almacenar en caché
         if (PERF_CONFIG.cacheDom) {
             editableCache.set(cell, input);
@@ -1175,16 +1175,16 @@ function makeCellEditable(cell, row) {
     });
 
     if (isNumberCell) {
-        input.addEventListener('input', function() {
+        input.addEventListener('input', function () {
             validateNumberInput(input);
         });
 
         // Solo permitir números válidos en tiempo real
-        input.addEventListener('keypress', function(e) {
+        input.addEventListener('keypress', function (e) {
             const validNumbers = ['0', '00', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-                                 '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
-                                 '21', '22', '23', '24', '25', '26', '27', '28', '29', '30',
-                                 '31', '32', '33', '34', '35', '36'];
+                '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
+                '21', '22', '23', '24', '25', '26', '27', '28', '29', '30',
+                '31', '32', '33', '34', '35', '36'];
 
             // Permitir teclas de control
             if (["Backspace", "Delete", "Tab", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
@@ -1200,29 +1200,29 @@ function makeCellEditable(cell, row) {
     }
 
     // Manejar pérdida de foco
-    input.addEventListener('blur', function() {
+    input.addEventListener('blur', function () {
         if (isNumberCell) {
             const newValue = input.value.trim();
-            
+
             // Si el valor no cambió, no hacer nada
             if (newValue === currentValue) {
                 cell.textContent = currentValue;
                 return;
             }
-            
+
             // Si se deja vacío, restaurar el valor anterior
             if (newValue === '') {
                 cell.textContent = currentValue;
                 return;
             }
-            
+
             // Validar el formato del número
             if (validateNumberInput(input)) {
                 const oldValue = cell.textContent;
-                
+
                 // Actualizar el valor en la celda
                 cell.textContent = newValue;
-                
+
                 // Validar números únicos
                 if (!validateUniqueNumbers(row, cell)) {
                     // Si no es único, restaurar el valor anterior
@@ -1250,12 +1250,12 @@ function makeCellEditable(cell, row) {
     });
 
     // Manejar tecla Enter
-    input.addEventListener('keypress', function(e) {
+    input.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             // Forzar el blur para que se procese el cambio
             input.blur();
-            
+
             // Si es una celda de número, mover el foco al siguiente campo
             if (isNumberCell) {
                 const nextCell = cell.nextElementSibling;
@@ -1272,9 +1272,9 @@ function makeCellEditable(cell, row) {
             }
         }
     });
-    
+
     // Hacer la celda editable con clic
-    cell.addEventListener('click', function(e) {
+    cell.addEventListener('click', function (e) {
         // Solo activar la edición si no es la celda de Gratis
         if (cell.dataset.editable !== 'gratis') {
             e.stopPropagation();
@@ -1283,7 +1283,7 @@ function makeCellEditable(cell, row) {
     });
 
     // Manejar tecla Escape para cancelar
-    input.addEventListener('keydown', function(e) {
+    input.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             input.value = currentValue;
             input.blur();
@@ -1293,7 +1293,7 @@ function makeCellEditable(cell, row) {
     });
 
     // Manejar Tab para pasar al siguiente input editable
-    input.addEventListener('keydown', function(e) {
+    input.addEventListener('keydown', function (e) {
         if (e.key === 'Tab') {
             e.preventDefault();
             // Buscar todas las celdas editables de la tabla
@@ -1320,7 +1320,7 @@ function makeCellEditable(cell, row) {
     });
 
     // Manejar ArrowRight para moverse a la siguiente celda editable si el cursor está al final
-    input.addEventListener('keydown', function(e) {
+    input.addEventListener('keydown', function (e) {
         if (e.key === 'ArrowRight') {
             // solo navegar si no hay modificadores y el caret está al final del input
             if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -1354,7 +1354,7 @@ function makeCellEditable(cell, row) {
     });
 
     // Manejar ArrowLeft para moverse a la celda editable anterior si el cursor está al inicio
-    input.addEventListener('keydown', function(e) {
+    input.addEventListener('keydown', function (e) {
         if (e.key === 'ArrowLeft') {
             // solo navegar si no hay modificadores y el caret está al inicio
             if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -1387,7 +1387,7 @@ function makeCellEditable(cell, row) {
     });
 
     // Manejar ArrowUp para moverse a la celda editable de la fila superior (misma columna)
-    input.addEventListener('keydown', function(e) {
+    input.addEventListener('keydown', function (e) {
         if (e.key === 'ArrowUp') {
             if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
             e.preventDefault();
@@ -1418,7 +1418,7 @@ function makeCellEditable(cell, row) {
     });
 
     // Manejar ArrowDown para moverse a la celda editable de la fila inferior (misma columna)
-    input.addEventListener('keydown', function(e) {
+    input.addEventListener('keydown', function (e) {
         if (e.key === 'ArrowDown') {
             if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
             e.preventDefault();
@@ -1453,10 +1453,10 @@ function makeCellEditable(cell, row) {
 function validateNumberInput(input) {
     const value = input.value.trim();
     const validNumbers = ['0', '00', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-                         '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
-                         '21', '22', '23', '24', '25', '26', '27', '28', '29', '30',
-                         '31', '32', '33', '34', '35', '36'];
-    
+        '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
+        '21', '22', '23', '24', '25', '26', '27', '28', '29', '30',
+        '31', '32', '33', '34', '35', '36'];
+
     if (value === '' || validNumbers.includes(value)) {
         input.classList.remove('bg-red-100');
         return true;
@@ -1470,10 +1470,10 @@ function validateNumberInput(input) {
 function validateUniqueNumbers(row, currentCell) {
     const numberCells = row.querySelectorAll('[data-editable="number"]');
     const currentValue = currentCell.textContent.trim();
-    
+
     // Solo validar si hay un valor
     if (!currentValue) return true;
-    
+
     // Verificar si el número ya existe en otras celdas de números
     for (let cell of numberCells) {
         if (cell !== currentCell && cell.textContent.trim() === currentValue) {
@@ -1484,7 +1484,7 @@ function validateUniqueNumbers(row, currentCell) {
             return false;
         }
     }
-    
+
     // Si no hay repetición, limpiar estilos de error
     currentCell.classList.remove('bg-red-200', 'border-red-500');
     return true;
@@ -1496,7 +1496,7 @@ function updatePlayerData(row, isGratis = null, dbId = null) {
     const playerId = parseInt(row.dataset.rowId, 10); // Usar ID de fila estable
     const name = cells[1].textContent.trim(); // La celda 1 es el nombre
     const targetPlayersArray = currentGameType === 'polla' ? pollaPlayers : microPlayers;
-    
+
     // Obtener los 6 números del jugador
     const numCount = currentGameType === 'polla' ? 6 : 3;
     const playerNumbers = [];
@@ -1506,7 +1506,7 @@ function updatePlayerData(row, isGratis = null, dbId = null) {
             playerNumbers.push(number);
         }
     }
-    
+
     // Actualizar o crear entrada del jugador
     const existingPlayerIndex = targetPlayersArray.findIndex(p => p.id === playerId);
     const existingPlayer = existingPlayerIndex >= 0 ? targetPlayersArray[existingPlayerIndex] : {};
@@ -1519,13 +1519,13 @@ function updatePlayerData(row, isGratis = null, dbId = null) {
         isComplete: true,
         gratis: isGratis !== null ? isGratis : (existingPlayer.gratis || false)
     };
-    
+
     if (existingPlayerIndex >= 0) {
         targetPlayersArray[existingPlayerIndex] = playerData;
     } else {
         targetPlayersArray.push(playerData);
     }
-    
+
     // Actualizar contador de jugadas solo con filas completas
 }
 
@@ -1534,10 +1534,10 @@ function updatePlaysCounter() {
     const currentPlayers = currentGameType === 'polla' ? pollaPlayers : microPlayers;
     playsCount = currentPlayers.length;
     document.getElementById('playsCount').textContent = playsCount;
-    
+
     const jugadasId = currentGameType === 'polla' ? 'pollaTableJugadas' : 'microTableJugadas';
     document.getElementById(jugadasId).textContent = playsCount;
-    
+
     // Actualizar estadísticas calculadas
     updateCalculatedStats();
 }
@@ -1546,16 +1546,16 @@ function updatePlaysCounter() {
 function updateCalculatedStats() {
     // 1. Obtener valores base de la UI y memoria
     const currentValues = dailyValues[currentGameType];
-    
+
     // 2. Sincronizar automáticamente el pote diario con el día actual
     const weekdayMap = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     const todayName = weekdayMap[new Date().getDay()];
     const poteDiarioActual = currentValues[todayName] || 0;
     currentValues.poteDiario = poteDiarioActual;
-    
+
     // 3. Usar el pote semanal manual configurado
     const poteSemanalActual = currentValues.poteSemanal || 0;
-    
+
     // 4. Obtener datos de jugadores
     const currentPlayers = currentGameType === 'polla' ? pollaPlayers : microPlayers;
     const completePlayers = currentPlayers.filter(p => p.isComplete);
@@ -1570,7 +1570,7 @@ function updateCalculatedStats() {
     const gananciaCasa = premioTotal * 0.2;
     const garantizado = currentValues.garantizado || 0;
     const acumulado = currentValues.acumulado || 0;
-    
+
     // 6. Calcular el pozo total para el premio mayor (ambos potes se suman)
     const pozoTotal = recaudadoParaPremio + poteDiarioActual + poteSemanalActual + acumulado + garantizado;
 
@@ -1578,7 +1578,7 @@ function updateCalculatedStats() {
     const thresholdHits = currentGameType === 'polla' ? 6 : 3;
     const ganadores = completePlayers.filter(player => player.hits === thresholdHits);
     const cantidadGanadores = ganadores.length; // Total de ganadores (pagados y gratis)
-    
+
     // 8. Calcular premio por ganador (pagado) SOLO si hay ganadores en el umbral fijo
     premioPorGanador = 0; // Resetear antes de calcular
     if (cantidadGanadores > 0) {
@@ -1604,7 +1604,7 @@ function updateCalculatedStats() {
     updateStatDisplay('acumulado', acumulado);
     updateStatDisplay('winners', cantidadGanadores);
     updateStatDisplay('premios', cantidadGanadores > 0 ? Math.floor(pozoTotal / cantidadGanadores) : 0);
-    updateStatDisplay('prize', pozoTotal);  
+    updateStatDisplay('prize', pozoTotal);
     updateStatDisplay('totalPrizePool', pozoTotal);
     updateStatDisplay('total', premioTotal)
 }
@@ -1626,7 +1626,7 @@ function updateStatDisplay(statType, value) {
         'prize': document.getElementById('prizeAmount'),
         'totalPrizePool': document.getElementById('totalPrizePool'),
     };
-    
+
     if (elements[statType]) {
         elements[statType].textContent = value;
     }
@@ -1648,11 +1648,11 @@ function updatePlayersTable() {
 function updatePollaTable() {
     const tableBody = document.getElementById('pollaTableBody');
     if (!tableBody) return;
-    
+
     // Usar un fragmento de documento para actualizaciones por lotes
     const fragment = document.createDocumentFragment();
     const rows = Array.from(tableBody.querySelectorAll('tr'));
-    
+
     // Primero, calcular todos los aciertos sin tocar el DOM
     pollaPlayers.forEach(player => {
         let hits = 0;
@@ -1663,36 +1663,36 @@ function updatePollaTable() {
         });
         player.hits = hits; // Asignar el valor calculado, no incrementar
     });
-    
+
     // Actualizar filas existentes
     rows.forEach((row, index) => {
         const cells = row.cells;
         const playerId = parseInt(row.dataset.rowId, 10);
         const player = pollaPlayers.find(p => p.id === playerId);
-        
+
         if (player) {
             // Actualizar aciertos
             const hitsCell = cells[9]; // Última celda para polla
             hitsCell.textContent = player.hits;
             hitsCell.setAttribute('data-hits', player.hits);
-            
+
             // Marcar números ganadores
             for (let i = 2; i <= 7; i++) { // Celdas de números
                 const numberCell = cells[i];
                 const number = numberCell.textContent.trim();
-                
+
                 numberCell.className = 'p-2 cursor-pointer hover:bg-gray-100 rounded'; // Reset class
-                
+
                 if (number && winningNumbers.has(number)) {
                     numberCell.classList.add('bg-green-500', 'text-white', 'font-bold');
                 }
             }
-            
+
             // Aplicar colores según aciertos
             applyHitsColors(row, player.hits, 'polla');
         }
     });
-    
+
     updateCalculatedStats();
 }
 
@@ -1700,11 +1700,11 @@ function updatePollaTable() {
 function updateMicroTable() {
     const tableBody = document.getElementById('microTableBody');
     if (!tableBody) return;
-    
+
     // Usar un fragmento de documento para actualizaciones por lotes
     const fragment = document.createDocumentFragment();
     const rows = Array.from(tableBody.querySelectorAll('tr'));
-    
+
     // Primero, calcular todos los aciertos sin tocar el DOM
     microPlayers.forEach(player => {
         let hits = 0;
@@ -1715,36 +1715,36 @@ function updateMicroTable() {
         });
         player.hits = hits; // Asignar el valor calculado, no incrementar
     });
-    
+
     // Actualizar filas existentes
     rows.forEach((row, index) => {
         const cells = row.cells;
         const playerId = parseInt(row.dataset.rowId, 10);
         const player = microPlayers.find(p => p.id === playerId);
-        
+
         if (player) {
             // Actualizar aciertos
             const hitsCell = cells[6]; // Última celda para micro
             hitsCell.textContent = player.hits;
             hitsCell.setAttribute('data-hits', player.hits);
-            
+
             // Marcar números ganadores
             for (let i = 2; i <= 4; i++) { // Celdas de números
                 const numberCell = cells[i];
                 const number = numberCell.textContent.trim();
-                
+
                 numberCell.className = 'p-2 cursor-pointer hover:bg-gray-100 rounded'; // Reset class
-                
+
                 if (number && winningNumbers.has(number)) {
                     numberCell.classList.add('bg-blue-500', 'text-white', 'font-bold');
                 }
             }
-            
+
             // Aplicar colores según aciertos
             applyHitsColors(row, player.hits, 'micro');
         }
     });
-    
+
     updateCalculatedStats();
 }
 
@@ -1774,7 +1774,7 @@ function applyHitsColors(row, hits, gameType) {
         bgColor = 'rgba(2, 255, 0)'; // Verde brillante para el ganador
         textColor = 'black';
         rowBgColor = 'rgba(2, 255, 0, 0.15)';
-    } 
+    }
     // Estilos intermedios solo para POLLA
     else if (gameType === 'polla') {
         switch (hits) {
@@ -1839,7 +1839,7 @@ function reorderTableRows() {
     const tableBody = getCurrentTableBody();
     const rows = Array.from(tableBody.querySelectorAll('tr'));
     const currentPlayers = currentGameType === 'polla' ? pollaPlayers : microPlayers;
-    
+
     // Crear array de filas con sus datos de jugador
     const rowsWithData = rows.map(row => {
         const cells = row.cells;
@@ -1851,7 +1851,7 @@ function reorderTableRows() {
             hits: player ? player.hits : 0
         };
     });
-    
+
     // Ordenar por aciertos (descendente)
     rowsWithData.sort((a, b) => {
         if (a.hits !== b.hits) {
@@ -1860,7 +1860,7 @@ function reorderTableRows() {
         // Si tienen los mismos aciertos, mantener orden original
         return 0;
     });
-    
+
     // Reorganizar filas en el DOM
     rowsWithData.forEach(item => {
         tableBody.appendChild(item.row);
@@ -1873,35 +1873,35 @@ async function clearSelections() {
         try {
             // 1. Limpiar estilos de las celdas seleccionadas
             const selectedCells = document.querySelectorAll('.number-cell.selected, .number-cell.bg-yellow-300');
-            
+
             // 2. Procesar en lotes para mejor rendimiento
             const batchSize = 50;
             const processBatch = (start) => {
                 const end = Math.min(start + batchSize, selectedCells.length);
-                
+
                 requestAnimationFrame(() => {
                     // Eliminar clases de todas las celdas en este lote
                     for (let i = start; i < end; i++) {
                         const cell = selectedCells[i];
                         if (cell) {
                             cell.classList.remove(
-                                'selected', 
-                                'ring-yellow-400', 
-                                'transform', 
-                                'scale-110', 
-                                'bg-yellow-300', 
+                                'selected',
+                                'ring-yellow-400',
+                                'transform',
+                                'scale-110',
+                                'bg-yellow-300',
                                 'text-black'
                             );
                         }
                     }
-                    
+
                     // Procesar siguiente lote si es necesario
                     if (end < selectedCells.length) {
                         processBatch(end);
                     } else {
                         // 3. Limpiar en memoria
                         winningNumbers.clear();
-                        
+
                         // 4. Actualizar la base de datos
                         updateWinningNumbersInDB()
                             .then(() => {
@@ -1909,7 +1909,7 @@ async function clearSelections() {
                                 updatePollaTable();
                                 updateMicroTable();
                                 updateCalculatedStats();
-                                
+
                                 // 6. Forzar actualización de la UI
                                 requestAnimationFrame(() => {
                                     document.querySelectorAll('tr').forEach(row => {
@@ -1920,7 +1920,7 @@ async function clearSelections() {
                                             hitsCell.classList.add('p-2', 'font-bold');
                                         }
                                     });
-                                    
+
                                     // Resolver la promesa cuando todo esté listo
                                     resolve();
                                 });
@@ -1932,7 +1932,7 @@ async function clearSelections() {
                     }
                 });
             };
-            
+
             // Iniciar el procesamiento
             if (selectedCells.length > 0) {
                 processBatch(0);
@@ -2022,7 +2022,7 @@ function openClearPotModal() {
 async function confirmClearPot() {
     try {
         const gameName = currentGameType === 'polla' ? 'Polla' : 'Micro';
-        
+
         // 1. Resetear los valores de los días en memoria para el modo actual
         const currentPotValues = dailyValues[currentGameType];
         if (currentPotValues) {
@@ -2065,7 +2065,7 @@ async function confirmClearPot() {
         // 6. Cerrar modal y mostrar mensaje
         closeClearPotModal();
         showToast(`¡El pote diario y semanal de la ${gameName} ha sido limpiado exitosamente!`, 'success');
-        
+
     } catch (error) {
         console.error('Error al limpiar el pote:', error);
         showToast('❌ Error al limpiar el pote', 'error');
@@ -2090,24 +2090,24 @@ async function confirmClearSelection() {
     try {
         closeClearSelectionModal();
         await clearSelections();
-        
+
         // Si estamos en modo micro, también limpiamos los números ganadores
         if (currentGameType === 'micro') {
             // Limpiar la interfaz de usuario
             document.querySelectorAll('.number-cell').forEach(cell => {
                 cell.classList.remove('selected', 'ring-yellow-400', 'transform', 'scale-110', 'bg-yellow-300', 'text-black');
             });
-            
+
             // Limpiar en memoria
             winningNumbers.clear();
-            
+
             // Actualizar en la base de datos
             await updateWinningNumbersInDB();
-            
+
             // Actualizar la tabla de jugadores
             updatePlayersTable();
         }
-        
+
         showToast('✅ Selección limpiada exitosamente', 'success');
     } catch (error) {
         console.error('Error al limpiar la selección:', error);
@@ -2125,12 +2125,12 @@ async function confirmResetPlays() {
     const confirmBtn = document.querySelector('#resetPlaysModal button[onclick="confirmResetPlays()"]');
     const originalText = confirmBtn.innerHTML;
     let errorMessage = '';
-    
+
     try {
         // Mostrar indicador de carga
         confirmBtn.disabled = true;
         confirmBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Procesando...';
-        
+
         // Ejecutar reset específico para el modo actual (NO usar el RPC global)
         const gameName = currentGameType === 'polla' ? 'Polla' : 'Micro';
         const jugadasDB = currentGameType === 'polla' ? JugadasPollaDB : JugadasMicroDB;
@@ -2141,7 +2141,7 @@ async function confirmResetPlays() {
             if (!jugadasDB || !jugadasDB.deleteAll) {
                 throw new Error(`Funciones de base de datos no disponibles para ${gameName}`);
             }
-            
+
             // Borrar solo las jugadas del juego actual usando las funciones de borrado
             if (currentGameType === 'polla') {
                 const jugadasRes = await JugadasPollaDB.deleteAll();
@@ -2269,9 +2269,9 @@ async function loadWinnersFromSupabase() {
         // Si se encontraron datos, aplicarlos
         if (res.success && res.data && Array.isArray(res.data.numeros_ganadores)) {
             const nums = res.data.numeros_ganadores.map(String); // Asegurar que sean strings
-            
+
             nums.forEach(n => winningNumbers.add(n));
-            
+
             // Marcar visualmente los números ganadores
             numberCells.forEach(cell => {
                 if (winningNumbers.has(cell.textContent.trim())) {
@@ -2533,12 +2533,12 @@ async function loadAllPlayersForAutocomplete() {
 // Manejar input del campo de nombre
 function handleAutocompleteInput(inputElement, suggestionsContainer) {
     const query = inputElement.value.toLowerCase().trim();
-    
+
     if (query.length === 0) {
         hideAutocomplete(suggestionsContainer);
         return;
     }
-    
+
     // Filtrar jugadores que coincidan desde Supabase
     // Priorizar prefijos (startsWith) y luego includes; limitar a 7 sugerencias
     const lower = query;
@@ -2553,8 +2553,8 @@ function handleAutocompleteInput(inputElement, suggestionsContainer) {
         }
     }
     // Orden: prefijos (alfabético), luego contains (alfabético)
-    starts.sort((a,b) => a.localeCompare(b));
-    contains.sort((a,b) => a.localeCompare(b));
+    starts.sort((a, b) => a.localeCompare(b));
+    contains.sort((a, b) => a.localeCompare(b));
     filteredPlayers = starts.concat(contains).slice(0, 7); // Limitar a 7
     // Mostrar la lista (incluso si está vacía) para que showAutocomplete pueda mostrar "Sin resultados"
     showAutocomplete(filteredPlayers, query, inputElement, suggestionsContainer);
@@ -2563,7 +2563,7 @@ function handleAutocompleteInput(inputElement, suggestionsContainer) {
 // Mostrar lista de autocompletado
 function showAutocomplete(players, query, inputElement, suggestionsContainer) {
     suggestionsContainer.innerHTML = '';
-    
+
     players.forEach((player, index) => {
         const item = document.createElement('div');
         // Agregar clases Tailwind para transición y desplazamiento al pasar/activar
@@ -2595,7 +2595,7 @@ function showAutocomplete(players, query, inputElement, suggestionsContainer) {
         none.textContent = 'Sin resultados';
         suggestionsContainer.appendChild(none);
     }
-    
+
     suggestionsContainer.classList.remove('hidden');
     currentAutocompleteIndex = -1;
 }
@@ -2632,12 +2632,12 @@ function highlightMatch(text, query) {
 // Manejar teclas en el campo de nombre
 function handleAutocompleteKeydown(e, inputElement, suggestionsContainer) {
     const items = suggestionsContainer.querySelectorAll('div');
-    
+
     if (suggestionsContainer.classList.contains('hidden') || items.length === 0) {
         return;
     }
-    
-    switch(e.key) {
+
+    switch (e.key) {
         case 'ArrowDown':
             e.preventDefault();
             currentAutocompleteIndex = Math.min(currentAutocompleteIndex + 1, items.length - 1);
@@ -2695,20 +2695,20 @@ async function addPlayerFromForm() {
         numbers.push(document.getElementById(`number${i}`).value.trim());
     }
     const gratis = document.getElementById('gratis').value;
-    
+
     // Validar que todos los campos estén llenos
     if (!name) return showToast('Por favor ingresa el nombre del jugador', 'error');
-    
+
     // Validar números
     const validNumbers = ['0', '00', ...Array.from({ length: 36 }, (_, i) => (i + 1).toString())];
     for (let i = 0; i < numCount; i++) {
         if (!numbers[i]) return showToast(`Por favor ingresa el número ${i + 1}`, 'error');
         if (!validNumbers.includes(numbers[i])) return showToast(`El número ${numbers[i]} no es válido.`, 'error');
     }
-    
+
     // Validar números únicos
     if (new Set(numbers).size !== numCount) return showToast('No puedes repetir números.', 'error');
-    
+
     // Encontrar la primera fila vacía
     const tableBody = getCurrentTableBody();
     const rows = tableBody.querySelectorAll('tr');
@@ -2752,10 +2752,395 @@ async function addPlayerFromForm() {
 }
 
 // Configurar el formulario
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('addPlayerForm');
     if (form) {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            addPlayerFromForm().catch(err => console.error("Error en addPlayerFromForm:", err));
+        });
+    }
+});
+
+// Exportar funciones para uso global
+window.openAddPlayerModal = openAddPlayerModal;
+window.closeAddPlayerModal = closeAddPlayerModal;
+window.addPlayerToDatabase = addPlayerToDatabase;
+window.removePlayerFromDatabase = removePlayerFromDatabase;
+window.resetAll = resetAll;
+window.openClearPotModal = openClearPotModal;
+window.closeClearPotModal = closeClearPotModal;
+window.confirmClearPot = confirmClearPot;
+
+// Mostrar sugerencias de autocompletado
+function showAutocompleteSuggestions(players, inputElement, suggestionsContainer) {
+    suggestionsContainer.innerHTML = '';
+
+    players.forEach(player => {
+        const item = document.createElement('div');
+        item.className = 'p-2 hover:bg-blue-100 cursor-pointer text-sm border-b border-gray-100';
+        item.innerHTML = highlightMatch(player, inputElement.value);
+
+        item.addEventListener('click', () => {
+            // Si el input está dentro de una celda de tabla, pasamos un callback para guardar la fila
+            let onSelect = null;
+            const cell = inputElement.closest('td');
+            if (cell && cell.parentElement && cell.parentElement.tagName === 'TR') {
+                const row = cell.parentElement;
+                onSelect = (playerName, inputEl) => {
+                    // Poner el valor en la celda y guardar
+                    cell.textContent = playerName;
+                    updatePlayerData(row);
+                    updatePlayersTable();
+                    saveRowData(row);
+                };
+            }
+            selectAutocompleteItem(player, inputElement, suggestionsContainer, onSelect);
+        });
+        suggestionsContainer.appendChild(item);
+    });
+
+    // Si no hay resultados, mostrar un item indicativo
+    if (!players || players.length === 0) {
+        const none = document.createElement('div');
+        none.className = 'p-2 text-gray-500 italic text-sm border-b border-gray-200';
+        none.textContent = 'Sin resultados';
+        suggestionsContainer.appendChild(none);
+    }
+
+    suggestionsContainer.classList.remove('hidden');
+    currentAutocompleteIndex = -1;
+}
+
+// Ocultar lista de autocompletado
+function hideAutocomplete(suggestionsContainer) {
+    if (suggestionsContainer) {
+        suggestionsContainer.classList.add('hidden');
+        suggestionsContainer.innerHTML = '';
+    }
+    currentAutocompleteIndex = -1;
+}
+
+// Seleccionar item del autocompletado
+function selectAutocompleteItem(playerName, inputElement, suggestionsContainer, onSelect) {
+    inputElement.value = playerName;
+    hideAutocomplete(suggestionsContainer);
+    // Ejecutar callback opcional (por ejemplo, para guardar fila de tabla)
+    try {
+        if (typeof onSelect === 'function') onSelect(playerName, inputElement);
+    } catch (err) {
+        console.error('onSelect callback error:', err);
+    }
+    // Trigger blur to save the data (si no se manejó en el callback)
+    inputElement.blur();
+}
+
+// Resaltar coincidencias en el texto
+function highlightMatch(text, query) {
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<strong class="text-blue-600">$1</strong>');
+}
+
+// Manejar teclas en el campo de nombre
+function handleAutocompleteKeydown(e, inputElement, suggestionsContainer) {
+    const items = suggestionsContainer.querySelectorAll('div');
+
+    if (suggestionsContainer.classList.contains('hidden') || items.length === 0) {
+        return;
+    }
+
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            currentAutocompleteIndex = Math.min(currentAutocompleteIndex + 1, items.length - 1);
+            updateAutocompleteSelection(items);
+            break;
+        case 'ArrowUp':
+            e.preventDefault();
+            currentAutocompleteIndex = Math.max(currentAutocompleteIndex - 1, -1);
+            updateAutocompleteSelection(items);
+            break;
+        case 'Enter':
+            e.preventDefault();
+            if (currentAutocompleteIndex >= 0 && currentAutocompleteIndex < items.length) {
+                const selectedPlayer = filteredPlayers[currentAutocompleteIndex];
+                // Si el input pertenece a una celda de tabla, pasar callback para guardar
+                let onSelect = null;
+                const cell = inputElement.closest('td');
+                if (cell && cell.parentElement && cell.parentElement.tagName === 'TR') {
+                    const row = cell.parentElement;
+                    onSelect = (playerName, inputEl) => {
+                        cell.textContent = playerName;
+                        updatePlayerData(row);
+                        updatePlayersTable();
+                        saveRowData(row);
+                    };
+                }
+                selectAutocompleteItem(selectedPlayer, inputElement, suggestionsContainer, onSelect);
+            }
+            break;
+        case 'Escape':
+            hideAutocomplete(suggestionsContainer);
+            break;
+    }
+}
+
+// Actualizar selección visual del autocompletado
+function updateAutocompleteSelection(items) {
+    items.forEach((item, index) => {
+        if (index === currentAutocompleteIndex) {
+            item.classList.add('bg-blue-100');
+        } else {
+            item.classList.remove('bg-blue-100');
+        }
+    });
+}
+
+// Agregar jugador desde el formulario
+async function addPlayerFromForm() {
+    const isPolla = currentGameType === 'polla';
+    const numCount = isPolla ? 6 : 3;
+
+    const name = document.getElementById('playerName').value.trim();
+    const numbers = [];
+    for (let i = 1; i <= numCount; i++) {
+        numbers.push(document.getElementById(`number${i}`).value.trim());
+    }
+    const gratis = document.getElementById('gratis').value;
+
+    // Validar que todos los campos estén llenos
+    if (!name) return showToast('Por favor ingresa el nombre del jugador', 'error');
+
+    // Validar números
+    const validNumbers = ['0', '00', ...Array.from({ length: 36 }, (_, i) => (i + 1).toString())];
+    for (let i = 0; i < numCount; i++) {
+        if (!numbers[i]) return showToast(`Por favor ingresa el número ${i + 1}`, 'error');
+        if (!validNumbers.includes(numbers[i])) return showToast(`El número ${numbers[i]} no es válido.`, 'error');
+    }
+
+    // Validar números únicos
+    if (new Set(numbers).size !== numCount) return showToast('No puedes repetir números.', 'error');
+
+    // Encontrar la primera fila vacía
+    const tableBody = getCurrentTableBody();
+    const rows = tableBody.querySelectorAll('tr');
+    let targetRow = null;
+    for (const row of rows) {
+        if (row.cells[1].textContent.trim() === '') {
+            targetRow = row;
+            break;
+        }
+    }
+
+    if (!targetRow) {
+        return showToast('No hay filas vacías disponibles. La tabla está llena.', 'error');
+    }
+
+    // Poblar la fila de la UI
+    const cells = targetRow.cells;
+    cells[1].textContent = name;
+    numbers.forEach((num, i) => {
+        cells[2 + i].textContent = num;
+    });
+    const gratisCell = cells[2 + numCount];
+    gratisCell.textContent = gratis;
+    gratisCell.classList.toggle('text-green-600', gratis === 'SÍ');
+    gratisCell.classList.toggle('font-bold', gratis === 'SÍ');
+
+    // Actualizar el estado local y guardar en la base de datos
+    updatePlayerData(targetRow, gratis === 'SÍ', null);
+    await saveRowData(targetRow);
+
+    // Actualizar aciertos y colores
+    updatePlayersTable();
+
+    // Si el nombre del jugador es nuevo, agregarlo a la lista de jugadores
+    if (typeof JugadoresDB !== 'undefined' && !allPlayersSupabase.includes(name)) {
+        await JugadoresDB.crear(name);
+        await loadAllPlayersForAutocomplete(); // Recargar la lista para autocompletado
+    }
+
+    closeAddPlayerModal();
+}
+
+// Configurar el formulario
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('addPlayerForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            addPlayerFromForm().catch(err => console.error("Error en addPlayerFromForm:", err));
+        });
+    }
+});
+
+// Exportar funciones para uso global
+window.openAddPlayerModal = openAddPlayerModal;
+window.closeAddPlayerModal = closeAddPlayerModal;
+window.addPlayerToDatabase = addPlayerToDatabase;
+window.removePlayerFromDatabase = removePlayerFromDatabase;
+window.resetAll = resetAll;
+window.clearCurrentPot = confirmClearPot;
+window.openClearPotModal = openClearPotModal;
+window.closeClearPotModal = closeClearPotModal;
+
+
+// Ocultar lista de autocompletado
+function hideAutocomplete(suggestionsContainer) {
+    if (suggestionsContainer) {
+        suggestionsContainer.classList.add('hidden');
+        suggestionsContainer.innerHTML = '';
+    }
+    currentAutocompleteIndex = -1;
+}
+
+// Seleccionar item del autocompletado
+function selectAutocompleteItem(playerName, inputElement, suggestionsContainer, onSelect) {
+    inputElement.value = playerName;
+    hideAutocomplete(suggestionsContainer);
+    // Ejecutar callback opcional (por ejemplo, para guardar fila de tabla)
+    try {
+        if (typeof onSelect === 'function') onSelect(playerName, inputElement);
+    } catch (err) {
+        console.error('onSelect callback error:', err);
+    }
+    // Trigger blur to save the data (si no se manejó en el callback)
+    inputElement.blur();
+}
+
+// Resaltar coincidencias en el texto
+function highlightMatch(text, query) {
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<strong class="text-blue-600">$1</strong>');
+}
+
+// Manejar teclas en el campo de nombre
+function handleAutocompleteKeydown(e, inputElement, suggestionsContainer) {
+    const items = suggestionsContainer.querySelectorAll('div');
+
+    if (suggestionsContainer.classList.contains('hidden') || items.length === 0) {
+        return;
+    }
+
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            currentAutocompleteIndex = Math.min(currentAutocompleteIndex + 1, items.length - 1);
+            updateAutocompleteSelection(items);
+            break;
+        case 'ArrowUp':
+            e.preventDefault();
+            currentAutocompleteIndex = Math.max(currentAutocompleteIndex - 1, -1);
+            updateAutocompleteSelection(items);
+            break;
+        case 'Enter':
+            e.preventDefault();
+            if (currentAutocompleteIndex >= 0 && currentAutocompleteIndex < items.length) {
+                const selectedPlayer = filteredPlayers[currentAutocompleteIndex];
+                // Si el input pertenece a una celda de tabla, pasar callback para guardar
+                let onSelect = null;
+                const cell = inputElement.closest('td');
+                if (cell && cell.parentElement && cell.parentElement.tagName === 'TR') {
+                    const row = cell.parentElement;
+                    onSelect = (playerName, inputEl) => {
+                        cell.textContent = playerName;
+                        updatePlayerData(row);
+                        updatePlayersTable();
+                        saveRowData(row);
+                    };
+                }
+                selectAutocompleteItem(selectedPlayer, inputElement, suggestionsContainer, onSelect);
+            }
+            break;
+        case 'Escape':
+            hideAutocomplete(suggestionsContainer);
+            break;
+    }
+}
+
+// Actualizar selección visual del autocompletado
+function updateAutocompleteSelection(items) {
+    items.forEach((item, index) => {
+        if (index === currentAutocompleteIndex) {
+            item.classList.add('bg-blue-100');
+        } else {
+            item.classList.remove('bg-blue-100');
+        }
+    });
+}
+
+// Agregar jugador desde el formulario
+async function addPlayerFromForm() {
+    const isPolla = currentGameType === 'polla';
+    const numCount = isPolla ? 6 : 3;
+
+    const name = document.getElementById('playerName').value.trim();
+    const numbers = [];
+    for (let i = 1; i <= numCount; i++) {
+        numbers.push(document.getElementById(`number${i}`).value.trim());
+    }
+    const gratis = document.getElementById('gratis').value;
+
+    // Validar que todos los campos estén llenos
+    if (!name) return showToast('Por favor ingresa el nombre del jugador', 'error');
+
+    // Validar números
+    const validNumbers = ['0', '00', ...Array.from({ length: 36 }, (_, i) => (i + 1).toString())];
+    for (let i = 0; i < numCount; i++) {
+        if (!numbers[i]) return showToast(`Por favor ingresa el número ${i + 1}`, 'error');
+        if (!validNumbers.includes(numbers[i])) return showToast(`El número ${numbers[i]} no es válido.`, 'error');
+    }
+
+    // Validar números únicos
+    if (new Set(numbers).size !== numCount) return showToast('No puedes repetir números.', 'error');
+
+    // Encontrar la primera fila vacía
+    const tableBody = getCurrentTableBody();
+    const rows = tableBody.querySelectorAll('tr');
+    let targetRow = null;
+    for (const row of rows) {
+        if (row.cells[1].textContent.trim() === '') {
+            targetRow = row;
+            break;
+        }
+    }
+
+    if (!targetRow) {
+        return showToast('No hay filas vacías disponibles. La tabla está llena.', 'error');
+    }
+
+    // Poblar la fila de la UI
+    const cells = targetRow.cells;
+    cells[1].textContent = name;
+    numbers.forEach((num, i) => {
+        cells[2 + i].textContent = num;
+    });
+    const gratisCell = cells[2 + numCount];
+    gratisCell.textContent = gratis;
+    gratisCell.classList.toggle('text-green-600', gratis === 'SÍ');
+    gratisCell.classList.toggle('font-bold', gratis === 'SÍ');
+
+    // Actualizar el estado local y guardar en la base de datos
+    updatePlayerData(targetRow, gratis === 'SÍ', null);
+    await saveRowData(targetRow);
+
+    // Actualizar aciertos y colores
+    updatePlayersTable();
+
+    // Si el nombre del jugador es nuevo, agregarlo a la lista de jugadores
+    if (typeof JugadoresDB !== 'undefined' && !allPlayersSupabase.includes(name)) {
+        await JugadoresDB.crear(name);
+        await loadAllPlayersForAutocomplete(); // Recargar la lista para autocompletado
+    }
+
+    closeAddPlayerModal();
+}
+
+// Configurar el formulario
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('addPlayerForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
             e.preventDefault();
             addPlayerFromForm().catch(err => console.error("Error en addPlayerFromForm:", err));
         });
@@ -2773,3 +3158,4 @@ window.openClearPotModal = openClearPotModal;
 window.closeClearPotModal = closeClearPotModal;
 window.confirmClearPot = confirmClearPot;
 window.deletePlay = deletePlay;
+

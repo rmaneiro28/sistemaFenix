@@ -7,7 +7,7 @@ let currentGameType = 'polla'; // 'polla' o 'micro'
 let lastComputedPrizePerWinner = 0;
 
 // Inicialización cuando se carga la página
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     // Inicializar Supabase
     if (typeof initializeSupabase === 'function') {
         if (!initializeSupabase()) {
@@ -142,7 +142,7 @@ async function loadDataFromSupabase() {
             garantizado = potData.garantizado || 0;
 
             // Forzar que el pote del día actual sea 143 siempre
-            const weekdayMap = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+            const weekdayMap = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
             const todayName = weekdayMap[new Date().getDay()];
 
             const lunes = (todayName === 'lunes') ? 143 : (potData.lunes || 0);
@@ -156,7 +156,7 @@ async function loadDataFromSupabase() {
             poteSemanal = lunes + martes + miercoles + jueves + viernes + sabado + domingo;
         } else {
             // Si no hay datos en BD, aun así el día actual debe aportar 143
-            const weekdayMap = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+            const weekdayMap = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
             const todayName = weekdayMap[new Date().getDay()];
         }
 
@@ -184,12 +184,12 @@ async function loadDataFromSupabase() {
 
         if (ticketsResult.success && Array.isArray(ticketsResult.data)) {
             const tickets = ticketsResult.data;
-            
+
             let seqCounter = 1;
             resultsData = tickets
                 .map(ticket => {
                     const playerName = ticket.nombre_jugador || 'Jugador Desconocido';
-                    
+
                     let playerNumbers;
                     if (currentGameType === 'polla') {
                         playerNumbers = [
@@ -201,7 +201,7 @@ async function loadDataFromSupabase() {
                             ticket.nro_1, ticket.nro_2, ticket.nro_3,
                         ].filter(n => n !== null && n !== undefined).map(String);
                     }
-                    
+
                     // Calcular aciertos
                     let hits = 0;
                     playerNumbers.forEach(number => { if (winningNumbers.includes(number)) hits++; });
@@ -233,7 +233,7 @@ async function loadDataFromSupabase() {
             const payingPlayersCount = resultsData.length - gratisCount;
             const premioTotal = payingPlayersCount * precioJugada;
             const recaudadoParaPremio = premioTotal * 0.8;
-            
+
             // Calcular el pozo total para el premio mayor
             // Restar el pote semanal del pozo total (según especificación)
             let pozoTotal = recaudadoParaPremio + poteSemanal + garantizado + acumulado;
@@ -296,13 +296,13 @@ function calculatePrize(hits, isGratis, maxHits, prizeForMaxHits, gameType) {
 
     // El premio ya se calcula y asigna en loadDataFromSupabase
     // Esta función puede ser simplificada o eliminada si no se usa en otro lugar.
-    const isCompleteWinner = (gameType === 'polla' && hits === 6) || 
-                           (gameType === 'micro' && hits === 3);
+    const isCompleteWinner = (gameType === 'polla' && hits === 6) ||
+        (gameType === 'micro' && hits === 3);
 
     if (isCompleteWinner && prizeForMaxHits > 0) {
         return prizeForMaxHits;
     }
-    
+
     return 0;
 }
 
@@ -329,7 +329,7 @@ function displayWinningNumbers() {
 // Mostrar estadísticas resumen
 async function displaySummaryStats() {
     const maxPossibleHits = currentGameType === 'polla' ? 6 : 3;
-    
+
     // Cargar datos del pote
     let poteSemanal = 0;
     let precioJugada = 50;
@@ -343,8 +343,8 @@ async function displaySummaryStats() {
         garantizado = potData.garantizado || 0;
         acumulado = potData.acumulado || 0;
         poteSemanal = potData.poteSemanal || 0;
-    } 
-    
+    }
+
     const fullHitWinners = resultsData.filter(player => player.hits === maxPossibleHits);
 
     const payingPlayersCount = resultsData.filter(player => !player.gratis).length;
@@ -410,7 +410,7 @@ async function displayResultsTable(dataToDisplay) {
     const searchInput = document.getElementById('searchInput');
     const searchTerm = searchInput ? searchInput.value.trim() : '';
     const resultsCounter = document.getElementById('resultsCounter');
-    
+
     tableBody.innerHTML = '';
 
     if (resultsCounter) {
@@ -498,17 +498,16 @@ async function displayResultsTable(dataToDisplay) {
 
         const numbersCell = document.createElement('td');
         numbersCell.className = 'px-2 py-2 text-center';
-        numbersCell.innerHTML = `<div class="flex items-center justify-center gap-1 flex-nowrap">${
-            player.numbers.map(number => {
-                const isHit = winningNumbers.includes(number);
-                const highlightedNumber = highlight(number, searchTerm);
-                if (isHit) {
-                    return `<span class="inline-flex items-center justify-center font-bold text-xs text-center rounded-md w-6 h-6 sm:w-7 sm:h-7" style="background-color: #06402b; color: #ffffff;">${highlightedNumber}</span>`;
-                }
-                const numberClass = 'bg-gray-200 text-gray-800';
-                return `<span class="inline-flex items-center justify-center font-bold text-xs ${numberClass} text-center rounded-md w-6 h-6 sm:w-7 sm:h-7">${highlightedNumber}</span>`;
-            }).join('')
-        }</div>`;
+        numbersCell.innerHTML = `<div class="flex items-center justify-center gap-1 flex-nowrap">${player.numbers.map(number => {
+            const isHit = winningNumbers.includes(number);
+            const highlightedNumber = highlight(number, searchTerm);
+            if (isHit) {
+                return `<span class="inline-flex items-center justify-center font-bold text-xs text-center rounded-md w-6 h-6 sm:w-7 sm:h-7" style="background-color: #06402b; color: #ffffff;">${highlightedNumber}</span>`;
+            }
+            const numberClass = 'bg-gray-200 text-gray-800';
+            return `<span class="inline-flex items-center justify-center font-bold text-xs ${numberClass} text-center rounded-md w-6 h-6 sm:w-7 sm:h-7">${highlightedNumber}</span>`;
+        }).join('')
+            }</div>`;
 
         const hitsCell = document.createElement('td');
         hitsCell.className = 'px-2 sm:px-6 py-4 text-center';
@@ -584,55 +583,7 @@ async function displayResults() {
     displayResultsTable(filteredData);
 }
 
-// Exportar resultados a CSV
-function exportResults() {
-    const searchInput = document.getElementById('searchInput');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-    let dataToExport = resultsData;
-    if (searchTerm) {
-        dataToExport = resultsData.filter(player => 
-            player.name.toLowerCase().includes(searchTerm)
-        );
-    }
-
-    if (dataToExport.length === 0) {
-        alert('No hay datos para exportar');
-        return;
-    }
-
-    let csvContent = 'ID,Nombre,Números,Aciertos,Gratis,Premio\n';
-    
-    dataToExport.forEach((player) => {
-        const id = player.seq_id;
-        const numbers = player.numbers.join('-');
-        const gratis = player.gratis ? 'SÍ' : 'NO';
-        let prize = '-';
-        if (player.hits === (currentGameType === 'polla' ? 6 : 3)) {
-            prize = lastComputedPrizePerWinner > 0 ? `${lastComputedPrizePerWinner} BS` : '-';
-        } else if (player.prize > 0) {
-            prize = `${Math.max(0, Number(player.prize) || 0)} BS`;
-        }
-
-        csvContent += `${id},"${player.name}","${numbers}",${player.hits},${gratis},"${prize}"\n`;
-    });
-
-    // Agregar información de números ganadores
-    csvContent += '\n\nNúmeros Ganadores\n';
-    csvContent += winningNumbers.join(',') + '\n';
-
-    // Crear y descargar archivo
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    const fileName = `resultados_${currentGameType}_${new Date().toISOString().split('T')[0]}.csv`;
-    link.setAttribute('download', fileName);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
 
 // Imprimir resultados
 function printResults() {
@@ -669,7 +620,7 @@ async function resetCurrentGame() {
 
     const onConfirm = async () => {
         closeModal();
-    const gameName = currentGameType === 'polla' ? 'Polla' : 'Micro';
+        const gameName = currentGameType === 'polla' ? 'Polla' : 'Micro';
         try {
             let deleteResult;
             if (currentGameType === 'polla') {
@@ -802,3 +753,236 @@ function updateMetaTags(imageDataUrl) {
         console.error('Error updating meta tags:', error);
     }
 }
+
+// Función para generar PDF con resultados
+async function generatePDF() {
+    console.log('Iniciando generación de PDF...');
+    try {
+        if (!window.jspdf) {
+            alert('Error: La librería jsPDF no está cargada. Por favor recarga la página.');
+            return;
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Cargar logo
+        const logoUrl = 'Logo Fenix.png';
+        const logoImg = new Image();
+        logoImg.src = logoUrl;
+
+        logoImg.onload = function () {
+            createPDF(doc, logoImg);
+        };
+
+        logoImg.onerror = function () {
+            console.warn('No se pudo cargar el logo, generando PDF sin él.');
+            createPDF(doc, null);
+        };
+    } catch (e) {
+        console.error('Error en generatePDF:', e);
+        alert('Error al generar PDF: ' + e.message);
+    }
+}
+
+function createPDF(doc, logoImg) {
+    try {
+        const gameTitle = currentGameType === 'polla' ? 'POLLA (6 NUMEROS)' : 'MICRO (3 NUMEROS)';
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+
+        if (winningNumbers.length === 0) {
+            alert('No hay números ganadores disponibles para generar el PDF.');
+            return;
+        }
+
+        // --- HEADER DESIGN ---
+        // Add a top banner
+        doc.setFillColor(220, 38, 38); // Rojo Fenix
+        doc.rect(0, 0, pageWidth, 25, 'F');
+
+        // Logo (White background circle or just overlay if transparent)
+        if (logoImg) {
+            // Draw a white circle behind logo to make it pop if needed, or just place it
+            doc.addImage(logoImg, 'PNG', 14, 2, 21, 21);
+        }
+
+        // Title (White text on Red banner)
+        doc.setFontSize(16);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`RESULTADOS - ${gameTitle}`, pageWidth / 2, 16, { align: 'center' });
+
+        // Date (Below banner)
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('es-VE');
+        const timeStr = now.toLocaleTimeString('es-VE');
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Generado el: ${dateStr} a las ${timeStr}`, pageWidth - 14, 32, { align: 'right' });
+
+        // --- WINNING NUMBERS SECTION ---
+        let startY = 40;
+        doc.setFontSize(11);
+        doc.setTextColor(0);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Números Ganadores:', 14, startY);
+
+        // Smaller balls as requested
+        const ballRadius = 5; // Reduced from 7
+        const spacingBetweenCenters = 14; // Reduced from 20
+        let ballX = 60; // Start position next to label
+        const ballY = startY - 2;
+
+        winningNumbers.forEach(num => {
+            doc.setFillColor(250, 204, 21); // Yellow
+            doc.setDrawColor(234, 179, 8);
+            doc.circle(ballX, ballY, ballRadius, 'FD');
+
+            doc.setTextColor(0);
+            doc.setFontSize(9); // Reduced font
+            doc.setFont('helvetica', 'bold');
+            doc.text(String(num), ballX, ballY + 1.5, { align: 'center', baseline: 'middle' }); // Adjusted baseline
+
+            ballX += spacingBetweenCenters;
+        });
+
+        // --- TABLE ---
+        const columns = [
+            { header: '#', dataKey: 'index' },
+            { header: 'Nombre', dataKey: 'name' },
+            { header: 'Números', dataKey: 'numbers' },
+            { header: 'Aciertos', dataKey: 'hits' }
+        ];
+
+        const rows = resultsData.map((player, index) => ({
+            index: index + 1,
+            name: player.name,
+            numbers: '',
+            rawNumbers: player.numbers,
+            hits: player.hits,
+            rawHits: player.hits
+        }));
+
+        const colors = {
+            6: [2, 255, 0],
+            5: [18, 117, 251],
+            4: [0, 119, 182],
+            3: [3, 179, 216],
+            2: [74, 202, 229],
+            1: [145, 224, 240]
+        };
+
+        doc.autoTable({
+            startY: startY + 10,
+            columns: columns, // Pass columns definition
+            body: rows,       // Pass full objects to preserve raw data
+            theme: 'grid',
+            headStyles: {
+                fillColor: [50, 50, 50], // Dark gray header for better contrast
+                textColor: 255,
+                fontStyle: 'bold',
+                halign: 'center',
+                fontSize: 9
+            },
+            styles: {
+                fontSize: 8,
+                cellPadding: 2,
+                textColor: 0,
+                valign: 'middle',
+                lineColor: [200, 200, 200],
+                lineWidth: 0.1
+            },
+            columnStyles: {
+                0: { cellWidth: 12, halign: 'center' },
+                1: { cellWidth: 'auto' },
+                2: { cellWidth: 'auto', halign: 'center' },
+                3: { cellWidth: 18, halign: 'center' }
+            },
+            didParseCell: function (data) {
+                if (data.section === 'body') {
+                    // Now data.row.raw should be the object from 'rows'
+                    const h = data.row.raw.rawHits;
+                    const maxHits = currentGameType === 'polla' ? 6 : 3;
+                    let fillColor = null;
+                    let textColor = 0;
+
+                    if (h === maxHits && h > 0) {
+                        fillColor = [2, 255, 0];
+                    } else if (currentGameType === 'polla') {
+                        if (h === 5) { fillColor = [18, 117, 251]; textColor = 255; }
+                        else if (h === 4) { fillColor = [0, 119, 182]; textColor = 255; }
+                        else if (h === 3) fillColor = [3, 179, 216];
+                        else if (h === 2) fillColor = [74, 202, 229];
+                        else if (h === 1) fillColor = [145, 224, 240];
+                    } else if (currentGameType === 'micro') {
+                        if (h === 2) fillColor = [3, 179, 216];
+                        else if (h === 1) fillColor = [145, 224, 240];
+                    }
+
+                    if (fillColor) {
+                        data.cell.styles.fillColor = fillColor;
+                        data.cell.styles.textColor = textColor;
+                    }
+                }
+            },
+            didDrawCell: function (data) {
+                if (data.section === 'body' && data.column.dataKey === 'numbers') {
+                    const numbers = data.row.raw.rawNumbers;
+                    // Safety check
+                    if (!numbers || !Array.isArray(numbers)) return;
+
+                    const cell = data.cell;
+                    const cellWidth = cell.width;
+                    const cellHeight = cell.height;
+                    const startX = cell.x;
+                    const startY = cell.y;
+
+                    const numRadius = 3;
+                    const numSpacing = 8;
+
+                    const totalNumsWidth = (numbers.length - 1) * numSpacing;
+                    let currentX = startX + (cellWidth / 2) - (totalNumsWidth / 2);
+                    const currentY = startY + (cellHeight / 2);
+
+                    numbers.forEach(num => {
+                        const isWinner = winningNumbers.includes(num);
+
+                        if (isWinner) {
+                            doc.setFillColor(22, 163, 74);
+                            doc.circle(currentX, currentY, numRadius, 'F');
+                            doc.setTextColor(255);
+                        } else {
+                            doc.setTextColor(0);
+                        }
+
+                        doc.setFontSize(7);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(String(num), currentX, currentY + 1, { align: 'center' });
+
+                        currentX += numSpacing;
+                    });
+                }
+            },
+            // Add Footer with page numbers
+            didDrawPage: function (data) {
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text('Página ' + doc.internal.getNumberOfPages(), pageWidth / 2, pageHeight - 10, { align: 'center' });
+            }
+        });
+
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const dateFileStr = `${day}-${month}-${year}`;
+        const fileName = `Resultados Polla del dia ${dateFileStr}.pdf`;
+        doc.save(fileName);
+    } catch (e) {
+        console.error('Error in createPDF:', e);
+        alert('Error al crear el contenido del PDF: ' + e.message);
+    }
+}
+
+// Exportar función para uso global
+window.generatePDF = generatePDF;

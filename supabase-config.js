@@ -25,7 +25,7 @@ const JugadoresDB = {
                 .from('jugadores')
                 .insert([{ nombre: nombre }])
                 .select();
-            
+
             if (error) throw error;
             return { success: true, data: data[0] };
         } catch (error) {
@@ -41,7 +41,7 @@ const JugadoresDB = {
                 .from('jugadores')
                 .select('*')
                 .order('nombre');
-            
+
             if (error) throw error;
             return { success: true, data: data };
         } catch (error) {
@@ -58,7 +58,7 @@ const JugadoresDB = {
                 .select('*')
                 .eq('nombre', nombre)
                 .single();
-            
+
             if (error && error.code !== 'PGRST116') throw error;
             return { success: true, data: data };
         } catch (error) {
@@ -74,7 +74,7 @@ const JugadoresDB = {
                 .from('jugadores')
                 .delete()
                 .eq('id', id);
-            
+
             if (error) throw error;
             return { success: true };
         } catch (error) {
@@ -395,7 +395,7 @@ const ResultadosNumerosDB = {
                 .gte('fecha_sorteo', fecha + 'T00:00:00')
                 .lt('fecha_sorteo', fecha + 'T23:59:59')
                 .order('fecha_sorteo', { ascending: false });
-            
+
             if (error) throw error;
             return { success: true, data: data };
         } catch (error) {
@@ -414,7 +414,7 @@ const MarcadoresDB = {
                 .from('marcadores')
                 .upsert([{ fecha: fecha, valor: valor }])
                 .select();
-            
+
             if (error) throw error;
             return { success: true, data: data[0] };
         } catch (error) {
@@ -432,7 +432,7 @@ const MarcadoresDB = {
                 .gte('fecha', fechaInicio)
                 .lte('fecha', fechaFin)
                 .order('fecha');
-            
+
             if (error) throw error;
             return { success: true, data: data };
         } catch (error) {
@@ -452,7 +452,7 @@ const PotesDB = {
                 .select('valores_diarios')
                 .eq('tipo_juego', tipoJuego)
                 .limit(1); // Use limit(1) to prevent errors if multiple rows exist
-            
+
             if (error) throw error;
             // data is an array, get the first element's values if it exists
             return { success: true, data: (data && data.length > 0) ? data[0].valores_diarios : null };
@@ -471,7 +471,7 @@ const PotesDB = {
                     onConflict: 'tipo_juego'
                 })
                 .select();
-            
+
             if (error) throw error;
             return { success: true, data: data[0] };
         } catch (error) {
@@ -507,6 +507,21 @@ async function truncateJugadasPolla() {
         return { success: true };
     } catch (error) {
         console.error('Error al truncar jugadas_polla:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Función para truncar todas las jugadas de micro
+async function truncateJugadasMicro() {
+    try {
+        const { error } = await supabaseClient
+            .from('jugadas_micro')
+            .delete()
+            .neq('id', 0); // Eliminar todas las filas
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('Error al truncar jugadas_micro:', error);
         return { success: false, error: error.message };
     }
 }
