@@ -802,10 +802,8 @@ function createPDF(doc, logoImg) {
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
 
-        if (winningNumbers.length === 0) {
-            alert('No hay números ganadores disponibles para generar el PDF.');
-            return;
-        }
+        // Check removed to allow download without results
+
 
         // --- HEADER DESIGN ---
         // Add a top banner
@@ -841,26 +839,33 @@ function createPDF(doc, logoImg) {
         doc.setFont('helvetica', 'bold');
         doc.text('Resultados del día', 14, startY);
 
-        // Rounded squares as requested
-        const squareSize = 10;
-        const spacingBetweenCenters = 14;
-        let ballX = 60; // Start position next to label
-        const ballY = startY - 7; // Adjust Y to center with text
+        if (winningNumbers.length === 0) {
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.setFont('helvetica', 'italic');
+            doc.text('No registrados', 60, startY);
+        } else {
+            // Rounded squares as requested
+            const squareSize = 10;
+            const spacingBetweenCenters = 14;
+            let ballX = 60; // Start position next to label
+            const ballY = startY - 7; // Adjust Y to center with text
 
-        winningNumbers.forEach(num => {
-            doc.setFillColor(250, 204, 21); // Yellow
-            doc.setDrawColor(234, 179, 8); // Darker yellow border
-            // roundedRect(x, y, w, h, rx, ry, style)
-            doc.roundedRect(ballX, ballY, squareSize, squareSize, 2, 2, 'FD');
+            winningNumbers.forEach(num => {
+                doc.setFillColor(250, 204, 21); // Yellow
+                doc.setDrawColor(234, 179, 8); // Darker yellow border
+                // roundedRect(x, y, w, h, rx, ry, style)
+                doc.roundedRect(ballX, ballY, squareSize, squareSize, 2, 2, 'FD');
 
-            doc.setTextColor(0);
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'bold');
-            // Center text in the square
-            doc.text(String(num), ballX + squareSize / 2, ballY + squareSize / 2, { align: 'center', baseline: 'middle' });
+                doc.setTextColor(0);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'bold');
+                // Center text in the square
+                doc.text(String(num), ballX + squareSize / 2, ballY + squareSize / 2, { align: 'center', baseline: 'middle' });
 
-            ballX += spacingBetweenCenters;
-        });
+                ballX += spacingBetweenCenters;
+            });
+        }
 
         // --- TABLE ---
         const columns = [
