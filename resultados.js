@@ -670,15 +670,27 @@ function generatePreviewImage() {
     if (winningNumbers.length > 0) {
         ctx.fillStyle = '#000';
         ctx.font = 'bold 24px Arial';
-        ctx.fillText('Números Ganadores:', canvas.width / 2, 120);
+        ctx.fillText('Resultados del día', canvas.width / 2, 120);
 
         winningNumbers.forEach((num, index) => {
-            ctx.fillStyle = '#06402b';
-            ctx.fillRect(canvas.width / 2 - 150 + index * 50, 140, 40, 40);
-            ctx.fillStyle = '#fff';
+            // Draw yellow rounded rectangle
+            ctx.fillStyle = '#facc15'; // Yellow-400
+            // roundRect is supported in modern browsers. Fallback to fillRect if needed or use a polyfill logic, 
+            // but for simplicity in this environment we can assume modern support or just use fillRect if we want to be super safe. 
+            // However, user asked for "como la imagen" (rounded).
+            if (ctx.roundRect) {
+                ctx.beginPath();
+                ctx.roundRect(canvas.width / 2 - 150 + index * 50, 140, 40, 40, 5);
+                ctx.fill();
+            } else {
+                ctx.fillRect(canvas.width / 2 - 150 + index * 50, 140, 40, 40);
+            }
+
+            ctx.fillStyle = '#000'; // Black text
             ctx.font = 'bold 20px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(num, canvas.width / 2 - 130 + index * 50, 165);
+            // Adjust text position for center alignment
+            ctx.fillText(num, canvas.width / 2 - 130 + index * 50, 168);
         });
     }
 
@@ -807,10 +819,11 @@ function createPDF(doc, logoImg) {
         }
 
         // Title (White text on Red banner)
+        const gameName = currentGameType === 'polla' ? 'Polla' : 'Micro';
         doc.setFontSize(16);
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.text(`RESULTADOS - ${gameTitle}`, pageWidth / 2, 16, { align: 'center' });
+        doc.text(`Resultados Pollas El Fenix - ${gameName}`, pageWidth / 2, 16, { align: 'center' });
 
         // Date (Below banner)
         const now = new Date();
@@ -826,23 +839,25 @@ function createPDF(doc, logoImg) {
         doc.setFontSize(11);
         doc.setTextColor(0);
         doc.setFont('helvetica', 'bold');
-        doc.text('Números Ganadores:', 14, startY);
+        doc.text('Resultados del día', 14, startY);
 
-        // Smaller balls as requested
-        const ballRadius = 5; // Reduced from 7
-        const spacingBetweenCenters = 14; // Reduced from 20
+        // Rounded squares as requested
+        const squareSize = 10;
+        const spacingBetweenCenters = 14;
         let ballX = 60; // Start position next to label
-        const ballY = startY - 2;
+        const ballY = startY - 7; // Adjust Y to center with text
 
         winningNumbers.forEach(num => {
             doc.setFillColor(250, 204, 21); // Yellow
-            doc.setDrawColor(234, 179, 8);
-            doc.circle(ballX, ballY, ballRadius, 'FD');
+            doc.setDrawColor(234, 179, 8); // Darker yellow border
+            // roundedRect(x, y, w, h, rx, ry, style)
+            doc.roundedRect(ballX, ballY, squareSize, squareSize, 2, 2, 'FD');
 
             doc.setTextColor(0);
-            doc.setFontSize(9); // Reduced font
+            doc.setFontSize(9);
             doc.setFont('helvetica', 'bold');
-            doc.text(String(num), ballX, ballY + 1.5, { align: 'center', baseline: 'middle' }); // Adjusted baseline
+            // Center text in the square
+            doc.text(String(num), ballX + squareSize / 2, ballY + squareSize / 2, { align: 'center', baseline: 'middle' });
 
             ballX += spacingBetweenCenters;
         });
@@ -856,7 +871,7 @@ function createPDF(doc, logoImg) {
         ];
 
         const rows = resultsData.map((player, index) => ({
-            index: index + 1,
+            index: player.seq_id,
             name: player.name,
             numbers: '',
             rawNumbers: player.numbers,
@@ -976,7 +991,8 @@ function createPDF(doc, logoImg) {
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const year = now.getFullYear();
         const dateFileStr = `${day}-${month}-${year}`;
-        const fileName = `Resultados Polla del dia ${dateFileStr}.pdf`;
+        const gameNameFile = currentGameType === 'polla' ? 'Polla' : 'Micro';
+        const fileName = `Resultados Pollas El Fenix - ${gameNameFile} ${dateFileStr}.pdf`;
         doc.save(fileName);
     } catch (e) {
         console.error('Error in createPDF:', e);

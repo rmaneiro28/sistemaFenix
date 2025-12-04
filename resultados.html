@@ -64,7 +64,7 @@
                 data-game="micro">Micro (3 Números)</button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 justify-center items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 justify-center items-center">
             <!-- Columna Izquierda: Números Ganadores y Estadísticas -->
             <div class="lg:col-span-1 space-y-6">
                 <div class="bg-white rounded-lg shadow-lg p-4">
@@ -99,10 +99,8 @@
             <div class="flex-shrink-0 md:mr-8">
                 <img src="Portada - 2.png" alt="Logo Pollas El Fenix" class="w-full h-auto">
             </div>
-            <div class="w-full  rounded-lg shadow-md p-4 mb-4">
+            <div class="w-full  rounded-lg shadow-md p-4">
                 <div class="flex flex-col md:flex-row items-center justify-center gap-8">
-
-
                     <!-- Columna para Valor y Pago Móvil -->
                     <div class="flex flex-col items-center md:items-start space-y-4">
 
@@ -139,17 +137,18 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="w-full flex justify-center">
-                <button onclick="generatePDF()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm whitespace-nowrap w-full sm:w-auto shadow-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    DESCARGAR PDF
-                </button>
+            <div class="w-full flex justify-center my-1">
+                <div class="w-[40%] items-center justify-center flex">
+                    <button onclick="generatePDF()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm whitespace-nowrap w-full sm:w-auto shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        DESCARGAR PDF
+                    </button>
+                </div>
             </div>
             <!-- Columna Derecha: Tabla de Resultados -->
             <div class="lg:col-span-3 relative">
