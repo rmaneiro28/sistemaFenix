@@ -136,7 +136,7 @@
                 </div>
             </div>
 
-            <!-- Botón PDF -->
+            <!-- Botón Descargar PDF -->
             <div class="lg:col-span-3 flex justify-center my-2">
                 <button onclick="generatePDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,6 +171,68 @@
                     <div class="overflow-x-auto w-full">
                         <table class="table-auto w-full text-sm text-left text-gray-500">
                             <thead class="text-xs text-white uppercase bg-green-600">
+                                <tr>
+                                    <th scope="col" class="px-3 py-2 text-center">#</th>
+                                    <th scope="col" class="px-3 py-2">NOMBRE</th>
+                                    <th scope="col" class="px-3 py-2 text-center">NÚMEROS</th>
+                                    <th scope="col" class="px-3 py-2 text-center">ACIERTOS</th>
+                                    <th scope="col" class="px-3 py-2 text-center">PREMIO</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Aviso Nuevo Grupo -->
+        <div id="newGroupNotice" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="newGroupNoticeTitle">
+            <div class="w-full max-w-md rounded-lg bg-white p-6 text-center shadow-xl">
+                <h2 id="newGroupNoticeTitle" class="mb-3 text-xl font-bold text-gray-800">Aviso importante</h2>
+                <p class="mb-5 text-gray-700">El grupo principal presenta un error. Temporalmente utilizaremos este nuevo grupo:</p>
+                <a href="https://chat.whatsapp.com/F5CB23xldclKYwkiQcXVJz?s=cl&amp;p=a&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener noreferrer" class="mb-3 block rounded-lg bg-green-600 px-4 py-3 font-bold text-white transition-colors hover:bg-green-700">
+                    Abrir nuevo grupo de WhatsApp
+                </a>
+                <button id="closeNewGroupNotice" type="button" class="rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-300">
+                    Continuar a resultados
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para resetear jugadas -->
+    <div id="confirmResetModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-[90%] max-w-md p-6">
+            <h3 class="text-lg font-bold mb-2">¿Estás seguro?</h3>
+            <p id="confirmResetModalMsg" class="text-sm text-gray-700 mb-4">
+                Esto pondrá el pote semanal a cero (lunes..domingo, garantizado y acumulado) y eliminará las jugadas y los números ganadores SOLO del modo actual (Polla o Micro). No afectará al otro modo.
+            </p>
+            <div class="flex justify-end gap-3">
+                <button id="cancelResetBtn" class="px-4 py-2 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300 transition-colors">Cancelar</button>
+                <button id="confirmResetBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de la Aplicación -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="resultados.js"></script>
+
+    <!-- Script para cerrar el aviso de nuevo grupo -->
+    <script>
+        document.getElementById('closeNewGroupNotice')?.addEventListener('click', () => {
+            document.getElementById('newGroupNotice').classList.add('hidden');
+        });
+    </script>
+</body>
+
+</html>
+case bg-green-600">
                                 <tr>
                                     <th scope="col" class="px-3 py-2 text-center">#</th>
                                     <th scope="col" class="px-3 py-2">NOMBRE</th>
