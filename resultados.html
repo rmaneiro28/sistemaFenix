@@ -1,15 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados - Polla El Fenix</title>
-    <meta property="og:title" content="Resultados del Día - Polla El Fénix">
-    <meta property="og:description" content="Resultados de hoy con números ganadores, total de jugadas y premios.">
-    <meta property="og:image" content="Logo Fenix.png">
-    <meta property="og:url" content="https://example.com/resultados.html">
+    <link rel="icon" type="image/x-icon" href="Logo-Fenix.ico">
+    <title>Resultados - Pollas El Fenix</title>
+
+    <!-- Metaetiquetas Open Graph -->
+    <meta property="og:title" content="Pollas El Fenix - Juega y Gana">
+    <meta property="og:description" content="Selecciona 6 animalitos y participa en 3 loterías. ¡Jugamos todos los días!">
+    <meta property="og:image" content="https://apuestaselfenix.netlify.app/Portada.png">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="https://apuestaselfenix.netlify.app/resultados">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Pollas El Fenix">
+
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Pollas El Fenix - Juega y Gana">
+    <meta name="twitter:description" content="Selecciona 6 animalitos y participa en 3 loterías. ¡Jugamos todos los días!">
+    <meta name="twitter:image" content="https://apuestaselfenix.netlify.app/Portada.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -31,34 +44,38 @@
             }
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
+
 <body class="bg-gradient-to-br from-background-1 to-background-2 max-w-[98vw] mx-auto min-h-screen mb-5">
-    <div id="newGroupNotice" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="newGroupNoticeTitle">
-        <div class="w-full max-w-md rounded-lg bg-white p-6 text-center shadow-xl">
-            <h2 id="newGroupNoticeTitle" class="mb-3 text-xl font-bold text-gray-800">Aviso importante</h2>
-            <p class="mb-5 text-gray-700">El grupo principal presenta un error. Temporalmente utilizaremos este nuevo grupo:</p>
-            <a href="https://chat.whatsapp.com/F5CB23xldclKYwkiQcXVJz?s=cl&amp;p=a&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener noreferrer" class="mb-3 block rounded-lg bg-green-600 px-4 py-3 font-bold text-white transition-colors hover:bg-green-700">Abrir nuevo grupo de WhatsApp</a>
-            <button id="closeNewGroupNotice" type="button" class="rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-300">Continuar a resultados</button>
-        </div>
-    </div>
-
     <div class="container mx-auto p-4">
+        <!-- Encabezado -->
         <div class="text-center mb-8">
-            <h1 class="results-title text-3xl sm:text-4xl font-bold text-[#a61c00] mb-2 drop-shadow-lg">🐦‍🔥 RESULTADOS POLLA EL FÉNIX 🐦‍🔥</h1>
+            <h1 class="results-title text-3xl sm:text-4xl font-bold text-[#a61c00] mb-2 drop-shadow-lg">
+                🐦‍🔥 RESULTADOS POLLAS EL FENIX 🐦‍🔥
+            </h1>
         </div>
 
+        <!-- Selector de Modo -->
         <div class="flex justify-center mb-8 bg-white/20 rounded-full p-1 max-w-sm mx-auto">
-            <button class="tab-btn flex-1 py-2 px-4 rounded-full font-bold text-white transition-all" data-game="polla">Polla (6 Números)</button>
-            <button class="tab-btn flex-1 py-2 px-4 rounded-full font-bold text-white transition-all" data-game="micro">Micro (3 Números)</button>
+            <button class="tab-btn flex-1 py-2 px-4 rounded-full font-bold text-white transition-all" data-game="polla">
+                Polla (6 Números)
+            </button>
+            <button class="tab-btn flex-1 py-2 px-4 rounded-full font-bold text-white transition-all" data-game="micro">
+                Micro (3 Números)
+            </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 justify-center items-center">
-            <!-- Columna Izquierda: Números Ganadores y Estadísticas -->
-            <div class="lg:col-span-1 space-y-6">
+        <!-- Contenedor Principal en Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            
+            <!-- Columna 1: Números Ganadores y Estadísticas -->
+            <div class="space-y-6">
                 <div class="bg-white rounded-lg shadow-lg p-4">
                     <h2 class="text-lg font-bold text-gray-800 text-center mb-4">Resultados del día</h2>
                     <div class="grid grid-cols-6 sm:grid-cols-8 gap-2 justify-center" id="winningNumbersGrid">
-                        <!-- Los números ganadores se cargarán aquí -->
+                        <!-- Carga dinámica -->
                     </div>
                 </div>
 
@@ -74,58 +91,65 @@
                         </div>
                         <div class="text-center bg-gray-100 p-2 rounded-lg">
                             <div class="text-xl sm:text-2xl font-bold text-fenix-orange" id="totalPrizeResult">0</div>
-                            <div class="text-sm font-semibold text-gray-600">Premio Total</div>
+                            <div class="text-sm font-semibold text-gray-600" id="premioAcum">Premio + Acumulado</div>
                         </div>
                         <div class="text-center bg-gray-100 p-2 rounded-lg">
                             <div class="text-xl sm:text-2xl font-bold text-fenix-purple" id="prizePerWinnerResult">0</div>
                             <div class="text-sm font-semibold text-gray-600">Premio por Ganador</div>
                         </div>
-            </article>
+                    </article>
                 </section>
             </div>
-            <div class="flex-shrink-0 md:mr-8">
-                <img src="Logo Fenix.png" alt="Logo Polla El Fénix" class="w-full h-auto">
+
+            <!-- Columna 2: Banner / Portada -->
+            <div class="flex justify-center items-center">
+                <img src="Portada - 2.png" alt="Logo Pollas El Fenix" class="w-full max-w-sm h-auto rounded-lg shadow-md">
             </div>
-            <div class="w-full  rounded-lg shadow-md p-4 mb-4">
-                <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+
+            <!-- Columna 3: Información de Pago Móvil -->
+            <div class="flex flex-col items-center">
+                <div class="bg-white border-2 border-blue-100 rounded-lg p-4 shadow-md w-full max-w-xs text-center space-y-3">
+                    <div class="font-extrabold text-blue-800 text-lg tracking-wide">PAGO MÓVIL</div>
                     
+                    <div id="precioJugadaResult" class="bg-yellow-400 text-black font-bold text-lg px-4 py-1 rounded-lg shadow-sm">
+                        VALOR: <span id="precioJugadaResultValue">50</span> BS
+                    </div>
                     
-                    <!-- Columna para Valor y Pago Móvil -->
-                    <div class="flex flex-col items-center md:items-start space-y-4">
-                        
-                        <!-- Pago Móvil -->
-                        <div class="bg-white border-2 border-blue-100 rounded-lg p-4 shadow-sm w-full max-w-xs text-center">
-                            <div class="font-extrabold text-blue-800 text-lg mb-3 tracking-wide">PAGO MÓVIL<!-- Valor -->
-                            </div>
-                        <div id="precioJugadaResult" class="bg-yellow-400 text-black font-bold text-lg px-4 py-1 rounded-lg shadow-md w-full">
-                            VALOR: <span id="precioJugadaResultValue">50</span> BS
+                    <div id="pagoMovilData" class="grid grid-cols-2 gap-2 text-left">
+                        <div class="bg-blue-50 p-2 rounded-lg col-span-2">
+                            <div class="text-xs font-medium text-blue-600">TELÉFONO</div>
+                            <div class="font-bold text-sm text-blue-900" id="pagoMovilTelefono">0424-303-5092</div>
                         </div>
-                            <div id="pagoMovilData" class="grid grid-cols-2 gap-2 mb-3">
-                                <div class="bg-blue-50 p-2 rounded-lg col-span-2">
-                                    <div class="text-xs font-medium text-blue-600">TELÉFONO</div>
-                                    <div class="font-bold text-sm text-blue-900" id="pagoMovilTelefono">0424-303-5092</div>
-                                </div>
-                                <div class="bg-blue-50 p-2 rounded-lg">
-                                    <div class="text-xs font-medium text-blue-600">CÉDULA</div>
-                                    <div class="font-bold text-sm text-blue-900" id="pagoMovilCedula">V-27.863.570</div>
-                                </div>
-                                <div class="bg-blue-50 p-2 rounded-lg">
-                                    <div class="text-xs font-medium text-blue-600">BANCO</div>
-                                    <div class="font-bold text-sm text-blue-900" id="pagoMovilBanco">0134</div>
-                                </div>
-                            </div>
-                            <button id="copyPagoMovil" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                                Copiar Datos
-                            </button>
+                        <div class="bg-blue-50 p-2 rounded-lg">
+                            <div class="text-xs font-medium text-blue-600">CÉDULA</div>
+                            <div class="font-bold text-sm text-blue-900" id="pagoMovilCedula">V-27.863.570</div>
+                        </div>
+                        <div class="bg-blue-50 p-2 rounded-lg">
+                            <div class="text-xs font-medium text-blue-600">BANCO</div>
+                            <div class="font-bold text-sm text-blue-900" id="pagoMovilBanco">0134</div>
                         </div>
                     </div>
+
+                    <button id="copyPagoMovil" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Copiar Datos
+                    </button>
                 </div>
             </div>
 
-            <!-- Columna Derecha: Tabla de Resultados -->
+            <!-- Botón PDF -->
+            <div class="lg:col-span-3 flex justify-center my-2">
+                <button onclick="generatePDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    DESCARGAR PDF
+                </button>
+            </div>
+
+            <!-- Tabla de Resultados -->
             <div class="lg:col-span-3 relative">
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden w-full max-w-full">
-                    <!-- Loading Spinner Overlay -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden w-full">
+                    <!-- Overlay de Carga -->
                     <div id="loadingOverlay" class="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-20 hidden">
                         <div class="flex items-center space-x-2">
                             <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -136,20 +160,79 @@
                         </div>
                     </div>
 
-                    <!-- Search Bar -->
-                    <div class="p-4 border-b">
-                        <input type="text" id="searchInput" placeholder="Buscar por nombre de jugador..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <!-- Buscador -->
+                    <div class="p-4 border-b flex flex-col gap-2">
+                        <input type="text" id="searchInput" placeholder="Buscar por nombre o número..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div id="resultsCounter" class="text-sm text-gray-600"></div>
                     </div>
 
+                    <!-- Tabla -->
                     <div class="overflow-x-auto w-full">
                         <table class="table-auto w-full text-sm text-left text-gray-500">
                             <thead class="text-xs text-white uppercase bg-green-600">
                                 <tr>
-                                    <th scope="col" class="px-2 sm:px-3 py-2 text-center">#</th>
-                                    <th scope="col" class="px-2 sm:px-3 py-2">NOMBRE</th>
-                                    <th scope="col" class="px-2 sm:px-3 py-2 text-center">NÚMEROS</th>
-                                    <th scope="col" class="px-2 sm:px-3 py-2 text-center">ACIERTOS</th>
-                                    <th scope="col" class="px-2 sm:px-3 py-2 text-center">PREMIO</th>
+                                    <th scope="col" class="px-3 py-2 text-center">#</th>
+                                    <th scope="col" class="px-3 py-2">NOMBRE</th>
+                                    <th scope="col" class="px-3 py-2 text-center">NÚMEROS</th>
+                                    <th scope="col" class="px-3 py-2 text-center">ACIERTOS</th>
+                                    <th scope="col" class="px-3 py-2 text-center">PREMIO</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Aviso Nuevo Grupo (Entre el final del grid y el cierre del container) -->
+        <div id="newGroupNotice" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="newGroupNoticeTitle">
+            <div class="w-full max-w-md rounded-lg bg-white p-6 text-center shadow-xl">
+                <h2 id="newGroupNoticeTitle" class="mb-3 text-xl font-bold text-gray-800">Aviso importante</h2>
+                <p class="mb-5 text-gray-700">El grupo principal presenta un error. Temporalmente utilizaremos este nuevo grupo:</p>
+                <a href="https://chat.whatsapp.com/F5CB23xldclKYwkiQcXVJz?s=cl&amp;p=a&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener noreferrer" class="mb-3 block rounded-lg bg-green-600 px-4 py-3 font-bold text-white transition-colors hover:bg-green-700">
+                    Abrir nuevo grupo de WhatsApp
+                </a>
+                <button id="closeNewGroupNotice" type="button" class="rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-300">
+                    Continuar a resultados
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para resetear jugadas -->
+    <div id="confirmResetModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-[90%] max-w-md p-6">
+            <h3 class="text-lg font-bold mb-2">¿Estás seguro?</h3>
+            <p id="confirmResetModalMsg" class="text-sm text-gray-700 mb-4">
+                Esto pondrá el pote semanal a cero (lunes..domingo, garantizado y acumulado) y eliminará las jugadas y los números ganadores SOLO del modo actual (Polla o Micro). No afectará al otro modo.
+            </p>
+            <div class="flex justify-end gap-3">
+                <button id="cancelResetBtn" class="px-4 py-2 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300 transition-colors">Cancelar</button>
+                <button id="confirmResetBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de la Aplicación -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="resultados.js"></script>
+
+    <!-- Script para cerrar el aviso de nuevo grupo -->
+    <script>
+        document.getElementById('closeNewGroupNotice').addEventListener('click', () => {
+            document.getElementById('newGroupNotice').classList.add('hidden');
+        });
+    </script>
+</body>
+
+</html>
+                    <th scope="col" class="px-2 sm:px-3 py-2 text-center">PREMIO</th>
                                 </tr>
                             </thead>
                             <tbody id="resultsTableBody">
