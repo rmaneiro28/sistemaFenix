@@ -229,18 +229,6 @@
             const modal = document.getElementById('newGroupNotice');
             if (modal) modal.classList.add('hidden');
         });
-
-        // Observador para garantizar que el texto permanezca como "Premio + Acumulado"
-        // incluso si resultados.js intenta cambiarlo a "Premio Total"
-        const targetLabel = document.getElementById('premioAcum');
-        if (targetLabel) {
-            const observer = new MutationObserver(() => {
-                if (targetLabel.textContent.trim() !== 'Premio + Acumulado') {
-                    targetLabel.textContent = 'Premio + Acumulado';
-                }
-            });
-            observer.observe(targetLabel, { childList: true, characterData: true, subtree: true });
-        }
     </script>
 </body>
 
